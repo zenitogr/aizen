@@ -13,8 +13,21 @@
     "windows": [
       {
         "title": "aizen",
+        "label": "main",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "visible": false
+      },
+      {
+        "label": "splashscreen",
+        "url": "/splashscreen/splashscreen.html",
+        "decorations": false,
+        "alwaysOnTop": true,
+        "center": true,
+        "title": "aizen",
+        "visible": true,
+        "height": 600,
+        "width": 800
       }
     ],
     "security": {

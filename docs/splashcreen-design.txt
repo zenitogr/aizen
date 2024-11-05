@@ -1,0 +1,156 @@
+AiZEN Design System
+==================
+
+COLOR PALETTE
+------------
+
+Primary Colors:
+1. Primary Purple (#8A2BE2 / --primary-color)
+   - Usage: Main brand color, gradients, logo, interactive elements
+   - Properties: High contrast, vibrant, represents AI/technology
+
+2. Secondary Blue (#00BFFF / --secondary-color)
+   - Usage: Accent color, gradients, highlights
+   - Properties: Dynamic contrast with primary, represents clarity/zen
+
+System Colors:
+1. Background Dark (#0A0A0A / --background-color)
+   - Usage: Default dark mode background
+   - Properties: Deep black for optimal contrast
+
+2. Text Light (#FFFFFF / --text-color)
+   - Usage: Primary text color in dark mode
+   - Properties: Maximum readability on dark backgrounds
+
+EFFECTS & ANIMATIONS
+-------------------
+
+Gradients:
+1. Logo Gradient
+   background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+   - Usage: "Ai" text in logo
+   - Effect: Smooth blue to purple transition
+
+2. Tree Reveal Gradient
+   background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+   - Usage: Zen tree reveal animation
+   - Effect: Depth and dimension in final reveal
+
+Shadows & Glows:
+1. Logo Shadow
+   filter: drop-shadow(0 0 10px rgba(138, 43, 226, 0.3));
+   - Hover: Increases to 15px spread
+   - Effect: Subtle purple glow
+
+2. Spinner Glow
+   box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+   - Usage: Depth enhancement for loader
+
+Animation Timings:
+1. Float Animation
+   - Duration: 6s
+   - Style: Infinite, ease-in-out
+   - Purpose: Subtle container movement
+
+2. Spinner Animations
+   - Main Spin: 3s infinite
+   - Inner Spin: 2s infinite reverse
+   - Pulse: 2s infinite
+
+3. Ripple Effect
+   - Duration: 4s
+   - Timing Function: cubic-bezier(0.4, 0, 0.2, 1)
+   - Delays: 0s, 1.3s, 2.6s (staggered)
+
+Special Effects:
+1. Ripple Gradient
+   background: radial-gradient(circle, 
+       rgba(138, 43, 226, 0.08) 0%,
+       rgba(0, 191, 255, 0.08) 100%
+   );
+   - Purpose: Expanding circles animation
+
+2. Tree Reveal
+   - SVG mask with gradient
+   - Multiple shadow layers
+   - Growth animation via scale
+
+ACCESSIBILITY
+------------
+
+Reduced Motion:
+- Triggers on prefers-reduced-motion
+- Simplified fade transitions
+- Core functionality preserved
+
+Color Schemes:
+1. Dark Mode (Default)
+   - Background: #0A0A0A
+   - Text: #FFFFFF
+
+2. Light Mode
+   - Background: #FFFFFF
+   - Text: #0A0A0A
+   - Activates with prefers-color-scheme: light
+
+TYPOGRAPHY
+---------
+
+Font Stack:
+-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif
+- System-first approach
+- Sans-serif fallback
+
+Text Sizes:
+- Logo: 3rem
+- Status: 1.2rem
+- Logo Letter Spacing: 2px
+
+RESPONSIVE DESIGN
+----------------
+
+Media Queries:
+- Reduced motion support
+- System color scheme adaptation
+- Tree reveal using vmin units
+
+USAGE GUIDELINES
+---------------
+
+1. Colors
+   - Maintain accessibility contrast
+   - Strategic gradient usage
+   - Consistent primary/secondary relationship
+
+2. Animations
+   - Prefer ease-in-out
+   - Stagger for visual interest
+   - Include reduced motion options
+
+3. Effects
+   - Layer shadows with gradients
+   - Build depth through layers
+   - Use GPU-accelerated properties
+
+KEYFRAME ANIMATIONS
+------------------
+
+Float:
+0% { transform: translateY(0px); }
+50% { transform: translateY(-10px); }
+100% { transform: translateY(0px); }
+
+Spin:
+0% { transform: rotate(0deg); }
+50% { transform: rotate(180deg); }
+100% { transform: rotate(360deg); }
+
+Ripple:
+0% { transform: scale(0); opacity: 0.8; }
+50% { opacity: 0.4; }
+100% { transform: scale(3); opacity: 0; }
+
+Tree Grow:
+0% { transform: scale(0) translateY(20px); opacity: 0; }
+50% { opacity: 0.7; }
+100% { transform: scale(1) translateY(0); opacity: 1; } 
