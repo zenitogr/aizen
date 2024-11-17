@@ -153,4 +153,44 @@ Ripple:
 Tree Grow:
 0% { transform: scale(0) translateY(20px); opacity: 0; }
 50% { opacity: 0.7; }
-100% { transform: scale(1) translateY(0); opacity: 1; } 
+100% { transform: scale(1) translateY(0); opacity: 1; }
+
+COMPONENTS
+----------
+
+1. Control Buttons
+   - Background: Linear gradient
+   - Border-radius: 25px
+   - Padding: 0.8rem 1.5rem
+   - Hover effect: translateY(-2px)
+   - Active effect: translateY(1px)
+   - Shadow: 0 0 15px rgba(138, 43, 226, 0.2)
+   - Hover shadow: 0 0 20px rgba(138, 43, 226, 0.4)
+
+2. Button States
+   - Default: Gradient background
+   - Hover: Elevated position + enhanced shadow
+   - Active: Pressed state
+   - Disabled: Reduced opacity
+
+INTERACTION PATTERNS
+------------------
+
+1. Button Feedback
+   - Visual feedback on hover/active states
+   - Smooth transitions (0.3s ease)
+   - Shadow enhancement on interaction
+   - Subtle movement for depth
+
+2. System Actions
+   - Relaunch: Full application restart
+   - Transitions: Smooth fade-out before action
+   - Error handling: Visual feedback on failure
+
+ANIMATION TIMING UPDATES
+----------------------
+
+1. Button Interactions
+   - Hover transition: 0.3s ease
+   - Active state: Immediate
+   - Shadow transition: 0.3s ease

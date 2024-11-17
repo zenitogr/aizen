@@ -312,3 +312,31 @@ body {
         --text-color: #0A0A0A;
     }
 }
+
+/* Add these new styles */
+.control-buttons {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.control-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    color: var(--text-color);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.4);
+}
+
+.control-btn:active {
+    transform: translateY(1px);
+}

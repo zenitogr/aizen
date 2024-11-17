@@ -43,6 +43,8 @@ pub fn run() {
             frontend_task: false,
             backend_task: false,
         }))
+        // Add the process plugin
+        .plugin(tauri_plugin_process::init())
         // Add a command we can use to check
         .invoke_handler(tauri::generate_handler![greet, set_complete, kill_app])
         // Use the setup hook to execute setup related tasks
