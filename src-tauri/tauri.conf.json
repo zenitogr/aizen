@@ -34,24 +34,29 @@
       "csp": null,
       "capabilities": [
         {
-          "identifier": "main-capability",
-          "description": "Main window capability",
+          "identifier": "fs-access",
+          "description": "Filesystem access for storing and reading application data",
           "windows": ["main", "splashscreen"],
           "permissions": [
-            "fs:default",
+            "path:default",
+            "path:allow-app-data",
+            "path:allow-app-cache",
+            "path:allow-app-config",
+            "path:allow-app-local-data",
+            "path:allow-home",
+            "fs:scope",
+            "fs:allow-app-data",
+            "fs:allow-app-cache",
+            "fs:allow-app-config",
+            "fs:allow-app-local-data",
+            "fs:allow-home",
             "fs:read-file",
+            "fs:read-dir",
             "fs:write-file",
             "fs:create-dir",
-            "fs:read-dir",
             "fs:remove-file",
             "fs:remove-dir",
-            "fs:copy-file",
-            "fs:exists",
-            "path:default",
-            "http:default",
-            "app:default",
-            "resources:default",
-            "window:default"
+            "fs:copy-file"
           ]
         }
       ]
@@ -69,8 +74,18 @@
     ]
   },
   "plugins": {
-    "process": {
-      "relaunch": true
+    "fs": {
+      "scope": {
+        "allow": [
+          "$APP/*",
+          "$APP_DATA/*",
+          "$APP_CACHE/*",
+          "$APP_CONFIG/*",
+          "$APP_LOCAL_DATA/*",
+          "$HOME/AiZEN/*"
+        ],
+        "deny": []
+      }
     }
   }
 }
