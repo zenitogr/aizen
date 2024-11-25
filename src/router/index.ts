@@ -4,6 +4,7 @@ import JournalView from '../views/JournalView.vue'
 import MemoryVaultView from '../views/MemoryVaultView.vue'
 import MindfulnessView from '../views/MindfulnessView.vue'
 import RecentlyDeletedView from '../views/RecentlyDeletedView.vue'
+import AnalyticsView from '../views/AnalyticsView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/recently-deleted',
       name: 'recently-deleted',
       component: RecentlyDeletedView
+    },
+    {
+      path: '/analytics',
+      name: 'analytics',
+      component: AnalyticsView
     }
   ]
 })
