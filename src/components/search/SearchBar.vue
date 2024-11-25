@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useSearchStore } from '../../stores/search';
+import { useTagsStore } from '../../stores/tags';
 import BaseInput from '../base/BaseInput.vue';
 import BaseButton from '../base/BaseButton.vue';
 import BaseCard from '../base/BaseCard.vue';
@@ -8,15 +9,11 @@ import DateRangePicker from '../base/DateRangePicker.vue';
 import TagInput from '../base/TagInput.vue';
 
 const searchStore = useSearchStore();
+const tagStore = useTagsStore();
 const showFilters = ref(false);
 const localQuery = ref(searchStore.query);
 
-// Sample tag suggestions - will be moved to a store later
-const tagSuggestions = [
-  'personal', 'work', 'ideas', 'goals', 'reflection',
-  'meditation', 'gratitude', 'milestone', 'achievement',
-  'learning', 'health', 'creativity', 'inspiration'
-];
+const tagSuggestions = computed(() => tagStore.getTagSuggestions);
 
 // Sync local query with store
 watch(() => searchStore.query, (newQuery) => {
@@ -38,6 +35,10 @@ function clearSearch() {
 
 function handleTagsUpdate(tags: string[]) {
   searchStore.filters.tags = tags;
+}
+
+function handleTagAdd(tag: string) {
+  tagStore.trackTagUsage(tag, 'search');
 }
 
 function handleDateRangeChange(start: string, end: string) {
@@ -103,6 +104,7 @@ function handleDateRangeChange(start: string, end: string) {
               v-model="searchStore.filters.tags"
               placeholder="Add tags to filter..."
               :suggestions="tagSuggestions"
+              @add="handleTagAdd"
             />
           </div>
 
