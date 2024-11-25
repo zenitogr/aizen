@@ -227,3 +227,44 @@ Integration Strategy:
 - Implement rate limiting and caching
 - Ensure privacy by processing data locally when possible
 - Use streaming for real-time responses
+
+DATA MANAGEMENT
+--------------
+Deletion Philosophy:
+- No immediate permanent deletions
+- All deletions are "soft" with undo capability
+- Hidden items remain accessible via admin dashboard
+- Supports digital well-being and parental oversight
+
+Deletion States:
+1. Active
+   - Normal, visible content
+   - Full access and interaction
+
+2. Recently Deleted
+   - Temporarily hidden
+   - Immediate undo available
+   - Appears in "Recently Deleted" section
+   - Auto-moves to "Hidden" after 30 days
+
+3. Hidden
+   - Not visible in regular interface
+   - Accessible through admin dashboard
+   - Can be restored or permanently deleted
+   - Used for content moderation
+   - Supports parental control
+
+Admin Dashboard:
+- Access to all hidden content
+- Permanent deletion capability
+- Parental control features
+- Content moderation tools
+- Activity monitoring for minors
+- Bulk actions for content management
+
+User Experience:
+- Toast notifications for deletions with undo
+- "Recently Deleted" section in each feature
+- Clear indication of temporary nature of deletions
+- Simple restoration process
+- Privacy-focused design
