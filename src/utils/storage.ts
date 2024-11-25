@@ -1,13 +1,13 @@
-import { readTextFile, writeTextFile, createDir } from '@tauri-apps/api/fs';
-import { BaseDirectory } from '@tauri-apps/api/path';
+import { exists } from '@tauri-apps/api/fs';
+import { invoke } from '@tauri-apps/api/core';
 
 export class Storage {
   private static readonly BASE_PATH = '.aizen';
 
   static async init() {
     try {
-      await createDir(this.BASE_PATH, { 
-        dir: BaseDirectory.App,
+      await invoke('plugin:fs|create_dir', { 
+        path: this.BASE_PATH,
         recursive: true 
       });
     } catch (error) {
@@ -18,11 +18,10 @@ export class Storage {
   static async save(key: string, data: any): Promise<void> {
     try {
       const jsonData = JSON.stringify(data);
-      await writeTextFile(
-        `${this.BASE_PATH}/${key}.json`,
-        jsonData,
-        { dir: BaseDirectory.App }
-      );
+      await invoke('plugin:fs|write_file', {
+        path: `${this.BASE_PATH}/${key}.json`,
+        contents: jsonData
+      });
     } catch (error) {
       console.error(`Failed to save ${key}:`, error);
       throw error;
@@ -31,11 +30,14 @@ export class Storage {
 
   static async load(key: string): Promise<any> {
     try {
-      const content = await readTextFile(
-        `${this.BASE_PATH}/${key}.json`,
-        { dir: BaseDirectory.App }
-      );
-      return JSON.parse(content);
+      const filePath = `${this.BASE_PATH}/${key}.json`;
+      if (await exists(filePath)) {
+        const content = await invoke('plugin:fs|read_text_file', {
+          path: filePath
+        }) as string;
+        return JSON.parse(content);
+      }
+      return null;
     } catch (error) {
       console.error(`Failed to load ${key}:`, error);
       return null;
