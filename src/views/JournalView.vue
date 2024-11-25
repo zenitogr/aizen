@@ -6,6 +6,7 @@ import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import JournalEditor from '../components/journal/JournalEditor.vue';
 import SearchBar from '../components/search/SearchBar.vue';
+import HighlightedText from '../components/base/HighlightedText.vue';
 
 const journalStore = useJournalStore();
 const searchStore = useSearchStore();
@@ -127,8 +128,18 @@ function handleDeleteClick(event: Event, entryId: string) {
               ×
             </BaseButton>
           </div>
-          <h3>{{ entry.title }}</h3>
-          <p class="entry-preview">{{ entry.content.slice(0, 150) }}...</p>
+          <h3>
+            <HighlightedText 
+              :text="entry.title"
+              :query="searchStore.query"
+            />
+          </h3>
+          <p class="entry-preview">
+            <HighlightedText 
+              :text="entry.content.slice(0, 150) + '...'"
+              :query="searchStore.query"
+            />
+          </p>
           <div class="entry-footer">
             <time>{{ formatDate(entry.createdAt) }}</time>
             <div class="entry-tags">
@@ -137,7 +148,10 @@ function handleDeleteClick(event: Event, entryId: string) {
                 :key="tag"
                 class="tag"
               >
-                {{ tag }}
+                <HighlightedText 
+                  :text="tag"
+                  :query="searchStore.query"
+                />
               </span>
             </div>
           </div>
