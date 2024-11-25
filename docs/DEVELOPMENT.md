@@ -57,8 +57,9 @@
    - [x] Advanced filters
    - [x] Date range filtering
    - [x] Tag system
+   - [x] Tag suggestions
    - [ ] Search analytics
-   - [ ] Tag suggestions
+   - [ ] Popular tags tracking
 
 3. Memory Vault
    - [ ] File upload system
@@ -88,11 +89,12 @@
 - Route transitions
 - Search system with filters
 - Tag management system
+- Tag suggestions system
 
 🏗️ In Progress:
-- Tag suggestions and analytics
+- Tag analytics
+- Search analytics
 - Data persistence
-- Search optimization
 
 ## Notes & Decisions Made
 - Using Groq for AI functionality
