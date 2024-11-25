@@ -1,36 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { onMounted } from "vue";
+import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 import { useAppStore } from './stores/app';
 import BaseButton from './components/base/BaseButton.vue';
-import BaseInput from './components/base/BaseInput.vue';
 import BaseCard from './components/base/BaseCard.vue';
 
+const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();
-
-const greetMsg = ref("");
-const name = ref("");
-const inputError = ref("");
-
-async function greet() {
-  if (!name.value) {
-    inputError.value = "Please enter your name";
-    return;
-  }
-  
-  try {
-    appStore.setLoading(true);
-    greetMsg.value = await invoke("greet", { name: name.value });
-    userStore.setName(name.value);
-    inputError.value = "";
-  } catch (error) {
-    appStore.addError(error as string);
-  } finally {
-    appStore.setLoading(false);
-  }
-}
 
 onMounted(async () => {
   if (!userStore.initialized) {
@@ -39,28 +17,29 @@ onMounted(async () => {
   if (!appStore.initialized) {
     appStore.initialize()
   }
-
-  if (userStore.name) {
-    name.value = userStore.name;
-  }
 });
+
+function navigateTo(route: string) {
+  appStore.setCurrentView(route);
+  router.push(`/${route === 'home' ? '' : route}`);
+}
 </script>
 
 <template>
   <div class="app-container" :data-theme="userStore.currentTheme">
     <header class="app-header">
-      <div class="logo">
+      <div class="logo" @click="navigateTo('home')" role="button" tabindex="0">
         <span class="ai">Ai</span><span class="zen">ZEN</span>
       </div>
       <nav class="main-nav">
         <BaseButton 
-          v-for="view in ['Journal', 'Memory Vault', 'Mindfulness']" 
+          v-for="view in ['journal', 'memory-vault', 'mindfulness']" 
           :key="view"
           variant="ghost"
-          :class="{ active: appStore.currentView === view.toLowerCase() }"
-          @click="appStore.setCurrentView(view.toLowerCase())"
+          :class="{ active: appStore.currentView === view }"
+          @click="navigateTo(view)"
         >
-          {{ view }}
+          {{ view.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
         </BaseButton>
       </nav>
     </header>
@@ -82,28 +61,7 @@ onMounted(async () => {
         </BaseButton>
       </BaseCard>
 
-      <BaseCard variant="elevated" class="welcome-card">
-        <h1>Welcome {{ userStore.name ? `, ${userStore.name}` : 'to AiZEN' }}</h1>
-        <p class="subtitle">Your personal space for growth and reflection</p>
-        
-        <div class="quick-actions">
-          <form class="greeting-form" @submit.prevent="greet">
-            <BaseInput
-              v-model="name"
-              placeholder="Enter your name..."
-              :disabled="appStore.isLoading"
-              :error="inputError"
-            />
-            <BaseButton 
-              type="submit"
-              :loading="appStore.isLoading"
-            >
-              {{ appStore.isLoading ? 'Loading...' : 'Greet' }}
-            </BaseButton>
-          </form>
-          <p class="greeting-message">{{ greetMsg }}</p>
-        </div>
-      </BaseCard>
+      <router-view></router-view>
     </main>
   </div>
 </template>
@@ -128,6 +86,13 @@ onMounted(async () => {
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo:focus {
+  outline: none;
+  opacity: 0.8;
 }
 
 .logo .ai {
