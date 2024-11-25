@@ -1,0 +1,194 @@
+@Codebase this is AiZEN, a tauri vue app.
+
+this is the vision of AiZEN:
+
+Creating AiZEN as a comprehensive personal haven app that leverages AI to support users in their journey of self-discovery, introspection, and personal growth is an ambitious and inspiring project. Here’s a detailed breakdown of how AI can be integrated to fulfill these multifaceted goals:
+1. Creation and Expression
+AI-Enhanced Creativity Tools: Provide platforms for writing, art, and music where AI can offer suggestions, generate ideas, or enhance user creations, fostering a space for limitless creative expression.
+Personal Projects: Allow users to initiate and manage personal projects, with AI offering resources, timelines, and motivational insights to keep them engaged and inspired.
+2. Introspection and Analysis
+Reflective Journals: Implement AI-driven journaling features that analyze user entries to provide insights, patterns, and prompts for deeper reflection.
+Emotional Intelligence: Use AI to help users track and understand their emotions, offering personalized content or exercises to support emotional growth and resilience.
+3. Memory and Remembrance
+Memory Vault: Create a digital space where users can store memories, with AI helping to organize, tag, and retrieve them, creating a rich tapestry of personal history.
+Reflective Prompts: Offer AI-generated prompts that encourage users to revisit and reflect on past experiences, fostering a deeper understanding of their journey.
+4. Self-Discovery and Exploration
+Personal Insights: Use AI to analyze user behavior and preferences, offering insights and suggestions that encourage self-discovery and exploration of new interests.
+Discovery Paths: Provide AI-curated paths that introduce users to new concepts, cultures, or skills, broadening their horizons and encouraging curiosity.
+5. Vision and Future Planning
+Goal Visualization: Allow users to visualize their goals and aspirations, with AI offering tools to map out steps, track progress, and adjust plans as needed.
+Future Self Envisioning: Use AI to help users envision their best selves, offering exercises and visualizations that align with their personal values and dreams.
+6. Well-being and Mindfulness
+Mindfulness Practices: Integrate AI-driven mindfulness exercises, such as guided meditations or breathing techniques, tailored to the user’s current state and needs.
+Well-being Check-ins: Implement regular AI-driven check-ins that assess the user’s well-being, offering supportive content or activities to enhance their mental and emotional health.
+7. Personal Control and Achievement
+Life Management Tools: Provide AI tools for managing daily tasks, routines, and priorities, helping users maintain control over their personal and professional lives.
+Achievement Tracking: Use AI to track personal achievements and milestones, offering recognition and insights that motivate continued growth and success.
+8. Community and Connection
+Supportive Networks: Facilitate the creation of supportive communities where users can share experiences and insights, with AI helping to connect individuals with similar goals or challenges.
+Collaborative Spaces: Enable collaborative projects or discussions, with AI assisting in coordination and idea generation, fostering a sense of community and shared purpose.
+9. Feedback and Adaptation
+Continuous Learning: Implement a feedback loop where AI learns from user interactions to continuously refine and personalize the experience.
+User-Driven Customization: Allow users to customize their experience, providing input on the type of content and features they find most valuable, enabling the AI to adapt and evolve.
+By integrating these AI-driven features, AiZEN can become a holistic platform that empowers users to create, introspect, and navigate their lives with the support of AI, fostering a sense of personal growth, fulfillment, and zen.
+
+please think through and offer a tauri vue app developement plan that is step by step and I will say proceed with next step and you will proceed with next step. if I say fix linting errors you look at the linting errors in the problems tab of cursor and you fix those
+
+I'll help you create a development plan for AiZEN based on the vision you've shared. Let's break this down into manageable steps, starting with the foundation and gradually building up the features.
+Development Plan for AiZEN
+Step 1: Project Setup and Base Configuration
+[x] Initialize Tauri + Vue project (already done)
+[x] Set up basic splash screen (already done)
+Step 2: Core Application Structure
+Set up proper application theming
+Implement the design system from splashscreen-design.txt
+Create global CSS variables
+Set up dark mode support
+Create base component layouts
+Create main application shell
+Design responsive layout
+Implement navigation system
+Set up main window management
+Set up state management
+Configure Pinia store
+Set up persistence layer
+Define core state interfaces
+Step 3: Authentication & User System
+Local user profile system
+User preferences storage
+Profile management
+Settings interface
+Step 4: Core Features - Phase 1
+Journal Module
+Basic text editor
+Entry management
+Local storage integration
+Memory Vault
+File system integration
+Basic media management
+Memory categorization
+Step 5: AI Integration - Phase 1
+1. Set up AI service layer
+API integration
+Request/response handling
+Error management
+Basic AI features
+Journal analysis
+Writing assistance
+Basic prompts
+Step 6: Mindfulness & Well-being
+Meditation timer
+Mood tracking
+Daily reflections
+And so on...
+To proceed, shall we start with Step 2.1 - Setting up proper application theming? This will give us a solid foundation for all future components and features.
+Let me know if you want to proceed with this step or if you'd like to adjust the plan first.
+
+AiZEN Design System
+==================
+
+DESIGN PRINCIPLES
+----------------
+1. Minimalism & Clarity
+   - Clean interfaces with purposeful whitespace
+   - Clear visual hierarchy
+   - Reduced cognitive load
+
+2. Zen Aesthetics
+   - Balanced compositions
+   - Natural, fluid animations
+   - Harmonious color relationships
+
+COLOR SYSTEM
+-----------
+Primary Colors:
+- Primary Purple (#8A2BE2)
+  Usage: Main brand color, CTAs, important UI elements
+  
+- Secondary Blue (#00BFFF)
+  Usage: Accents, highlights, secondary actions
+
+Neutral Colors:
+- Background Dark (#0A0A0A)
+- Surface Dark (#121212)
+- Surface Light (#1E1E1E)
+- Border Color (#2A2A2A)
+
+Text Colors:
+- Primary Text (#FFFFFF)
+- Secondary Text (#B3B3B3)
+- Disabled Text (#666666)
+
+Status Colors:
+- Success (#4CAF50)
+- Warning (#FFC107)
+- Error (#FF5252)
+- Info (#2196F3)
+
+TYPOGRAPHY
+---------
+Font Family:
+- Primary: 'Inter', sans-serif
+- Monospace: 'Fira Code', monospace (for code elements)
+
+Font Sizes:
+- xs: 0.75rem (12px)
+- sm: 0.875rem (14px)
+- base: 1rem (16px)
+- lg: 1.125rem (18px)
+- xl: 1.25rem (20px)
+- 2xl: 1.5rem (24px)
+- 3xl: 1.875rem (30px)
+- 4xl: 2.25rem (36px)
+
+SPACING
+-------
+Base Unit: 4px
+- xs: 0.25rem (4px)
+- sm: 0.5rem (8px)
+- md: 1rem (16px)
+- lg: 1.5rem (24px)
+- xl: 2rem (32px)
+- 2xl: 3rem (48px)
+
+ANIMATIONS
+---------
+Timing Functions:
+- Default: cubic-bezier(0.4, 0, 0.2, 1)
+- Ease In: cubic-bezier(0.4, 0, 1, 1)
+- Ease Out: cubic-bezier(0, 0, 0.2, 1)
+
+Durations:
+- Fast: 150ms
+- Normal: 250ms
+- Slow: 350ms
+
+EFFECTS
+-------
+Shadows:
+- sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05)
+- md: 0 4px 6px -1px rgba(0, 0, 0, 0.1)
+- lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1)
+
+Gradients:
+- Brand: linear-gradient(45deg, var(--primary-color), var(--secondary-color))
+- Surface: linear-gradient(180deg, var(--surface-dark), var(--surface-light))
+
+COMPONENTS
+---------
+Buttons:
+- Height: 40px
+- Padding: 0 16px
+- Border Radius: 8px
+- Font Size: sm (14px)
+
+Input Fields:
+- Height: 40px
+- Padding: 0 12px
+- Border Radius: 8px
+- Border Width: 1px
+
+Cards:
+- Padding: 16px
+- Border Radius: 12px
+- Background: var(--surface-dark)

@@ -13,11 +13,17 @@ pub fn run() {
         .expect("error while running tauri application");
 } */
 // Import functionalities we'll be using
+use std::process;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
-use tauri::{AppHandle, Manager, State};
+use tauri::{
+    menu::{Menu, MenuItem},
+    Manager,
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
+};
+
+use tauri::{AppHandle, State};
 use tokio::time::{sleep, Duration};
-use std::process;
 
 // Create a struct we'll use to track the completion of
 // setup related tasks
@@ -50,6 +56,40 @@ pub fn run() {
         // Use the setup hook to execute setup related tasks
         // Runs before the main loop, so no windows are yet created
         .setup(|app| {
+            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&quit_i])?;
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().unwrap().clone())
+                .menu(&menu)
+                .menu_on_left_click(true)
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "quit" => {
+                        println!("quit menu item was clicked");
+                        app.exit(0);
+                    }
+                    _ => {
+                        println!("menu item {:?} not handled", event.id);
+                    }
+                })
+                .on_tray_icon_event(|tray, event| match event {
+                    TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        println!("left click pressed and released");
+                        // in this example, let's show and focus the main window when the tray is clicked
+                        let app = tray.app_handle();
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    _ => {
+                        println!("unhandled event {event:?}");
+                    }
+                })
+                .build(app)?;
             // Spawn setup as a non-blocking task so the windows can be
             // created and ran while it executes
             spawn(setup(app.handle().clone()));
@@ -90,23 +130,23 @@ async fn set_complete(
     if should_transition {
         let splash_window = app.get_webview_window("splashscreen").unwrap();
         let main_window = app.get_webview_window("main").unwrap();
-        
+
         // First fade out the splash container
         splash_window
             .eval("document.querySelector('.splash-container').classList.add('fade-out')")
             .unwrap();
-        
+
         // Wait for fade out animation
         sleep(Duration::from_millis(1000)).await;
-        
+
         // Show the tree
         splash_window
             .eval("document.querySelector('.tree-reveal').classList.add('show')")
             .unwrap();
-        
+
         // Wait for tree animation
         sleep(Duration::from_millis(1200)).await;
-        
+
         splash_window.close().unwrap();
         main_window.show().unwrap();
     }
