@@ -1,4 +1,3 @@
-import { exists } from '@tauri-apps/api/fs';
 import { invoke } from '@tauri-apps/api/core';
 
 export class Storage {
@@ -30,10 +29,13 @@ export class Storage {
 
   static async load(key: string): Promise<any> {
     try {
-      const filePath = `${this.BASE_PATH}/${key}.json`;
-      if (await exists(filePath)) {
+      const exists = await invoke('plugin:fs|exists', {
+        path: `${this.BASE_PATH}/${key}.json`
+      });
+      
+      if (exists) {
         const content = await invoke('plugin:fs|read_text_file', {
-          path: filePath
+          path: `${this.BASE_PATH}/${key}.json`
         }) as string;
         return JSON.parse(content);
       }
