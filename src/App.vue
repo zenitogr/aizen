@@ -17,7 +17,7 @@ const appStore = useAppStore();
 const journalStore = useJournalStore();
 
 const mainNavItems = ['journal', 'memory-vault', 'mindfulness'];
-const utilityNavItems = ['recently-deleted'];
+const utilityNavItems = ['analytics', 'recently-deleted'];
 
 const recentlyDeletedCount = computed(() => journalStore.recentlyDeletedEntries.length);
 
