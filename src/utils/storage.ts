@@ -1,5 +1,5 @@
-import { fs } from '@tauri-apps/api';
-const { BaseDirectory, createDir, readTextFile, writeTextFile } = fs;
+import { readTextFile, writeTextFile, createDir } from '@tauri-apps/api/fs';
+import { BaseDirectory } from '@tauri-apps/api/path';
 
 export class Storage {
   private static readonly BASE_PATH = '.aizen';
