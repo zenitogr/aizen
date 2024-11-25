@@ -24,6 +24,14 @@ export const useSearchStore = defineStore('search', {
     isSearching: false
   }),
 
+  getters: {
+    hasActiveFilters(state): boolean {
+      return state.filters.tags.length > 0 || 
+        !!state.filters.type || 
+        !!(state.filters.dateRange?.start && state.filters.dateRange?.end);
+    }
+  },
+
   actions: {
     setQuery(query: string) {
       this.query = query

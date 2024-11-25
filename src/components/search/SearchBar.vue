@@ -5,10 +5,18 @@ import BaseInput from '../base/BaseInput.vue';
 import BaseButton from '../base/BaseButton.vue';
 import BaseCard from '../base/BaseCard.vue';
 import DateRangePicker from '../base/DateRangePicker.vue';
+import TagInput from '../base/TagInput.vue';
 
 const searchStore = useSearchStore();
 const showFilters = ref(false);
 const localQuery = ref(searchStore.query);
+
+// Sample tag suggestions - will be moved to a store later
+const tagSuggestions = [
+  'personal', 'work', 'ideas', 'goals', 'reflection',
+  'meditation', 'gratitude', 'milestone', 'achievement',
+  'learning', 'health', 'creativity', 'inspiration'
+];
 
 // Sync local query with store
 watch(() => searchStore.query, (newQuery) => {
@@ -28,8 +36,8 @@ function clearSearch() {
   localQuery.value = '';
 }
 
-function removeTag(tag: string) {
-  searchStore.removeTag(tag);
+function handleTagsUpdate(tags: string[]) {
+  searchStore.filters.tags = tags;
 }
 
 function handleDateRangeChange(start: string, end: string) {
@@ -72,6 +80,7 @@ function handleDateRangeChange(start: string, end: string) {
         @click="toggleFilters"
       >
         Filters
+        <span v-if="searchStore.hasActiveFilters" class="filter-indicator"></span>
       </BaseButton>
     </div>
 
@@ -90,21 +99,11 @@ function handleDateRangeChange(start: string, end: string) {
 
           <div class="filter-group">
             <h4>Tags</h4>
-            <div class="tags">
-              <span 
-                v-for="tag in searchStore.filters.tags" 
-                :key="tag"
-                class="tag"
-              >
-                {{ tag }}
-                <button 
-                  class="remove-tag"
-                  @click="removeTag(tag)"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
+            <TagInput
+              v-model="searchStore.filters.tags"
+              placeholder="Add tags to filter..."
+              :suggestions="tagSuggestions"
+            />
           </div>
 
           <div class="filter-group">
@@ -192,37 +191,13 @@ function handleDateRangeChange(start: string, end: string) {
   font-size: 0.875rem;
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
-.tag {
-  background: var(--surface-light);
-  color: var(--text-secondary);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.remove-tag {
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.7;
-}
-
-.remove-tag:hover {
-  opacity: 1;
+.filter-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: inline-block;
+  margin-left: var(--spacing-xs);
 }
 
 .type-filters {
