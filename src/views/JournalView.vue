@@ -1,37 +1,91 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useJournalStore } from '../stores/journal';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
+import JournalEditor from '../components/journal/JournalEditor.vue';
 
-const entries = ref([
-  {
-    id: 1,
-    title: 'My First Entry',
-    preview: 'Today I started my journey with AiZEN...',
-    date: new Date().toISOString(),
+const journalStore = useJournalStore();
+
+const showEditor = computed(() => journalStore.isEditing);
+const entries = computed(() => journalStore.sortedEntries);
+const currentEntry = computed(() => journalStore.currentEntry);
+
+function handleNewEntry() {
+  journalStore.setEditing(true);
+}
+
+function handleEditEntry(entryId: string) {
+  journalStore.setEditing(true, entryId);
+}
+
+async function handleSaveEntry({ title, content }: { title: string, content: string }) {
+  if (currentEntry.value) {
+    await journalStore.updateEntry(currentEntry.value.id, { title, content });
+  } else {
+    await journalStore.createEntry({ 
+      title, 
+      content,
+      tags: [],
+    });
   }
-]);
+  journalStore.setEditing(false);
+}
+
+function handleCancel() {
+  journalStore.setEditing(false);
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
 </script>
 
 <template>
   <div class="journal-view">
-    <header class="view-header">
-      <h1>Journal</h1>
-      <BaseButton>New Entry</BaseButton>
-    </header>
+    <template v-if="showEditor">
+      <JournalEditor
+        :initial-title="currentEntry?.title"
+        :initial-content="currentEntry?.content"
+        @save="handleSaveEntry"
+        @cancel="handleCancel"
+      />
+    </template>
+    <template v-else>
+      <header class="view-header">
+        <h1>Journal</h1>
+        <BaseButton @click="handleNewEntry">New Entry</BaseButton>
+      </header>
 
-    <div class="entries-grid">
-      <BaseCard 
-        v-for="entry in entries" 
-        :key="entry.id"
-        variant="elevated"
-        class="entry-card"
-      >
-        <h3>{{ entry.title }}</h3>
-        <p class="entry-preview">{{ entry.preview }}</p>
-        <time>{{ new Date(entry.date).toLocaleDateString() }}</time>
-      </BaseCard>
-    </div>
+      <div class="entries-grid">
+        <BaseCard 
+          v-for="entry in entries" 
+          :key="entry.id"
+          variant="elevated"
+          class="entry-card"
+          @click="handleEditEntry(entry.id)"
+        >
+          <h3>{{ entry.title }}</h3>
+          <p class="entry-preview">{{ entry.content.slice(0, 150) }}...</p>
+          <div class="entry-footer">
+            <time>{{ formatDate(entry.createdAt) }}</time>
+            <div class="entry-tags">
+              <span 
+                v-for="tag in entry.tags" 
+                :key="tag"
+                class="tag"
+              >
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+        </BaseCard>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -68,10 +122,35 @@ const entries = ref([
   color: var(--text-secondary);
   margin: var(--spacing-sm) 0;
   font-size: 0.875rem;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.entry-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-sm);
 }
 
 time {
   color: var(--text-disabled);
+  font-size: 0.75rem;
+}
+
+.entry-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.tag {
+  background: var(--surface-light);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
   font-size: 0.75rem;
 }
 
