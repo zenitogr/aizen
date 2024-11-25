@@ -7,6 +7,7 @@ interface UserState {
     fontSize: 'small' | 'medium' | 'large'
   }
   lastActive: Date | null
+  initialized: boolean
 }
 
 export const useUserStore = defineStore('user', {
@@ -16,7 +17,8 @@ export const useUserStore = defineStore('user', {
       theme: 'dark',
       fontSize: 'medium'
     },
-    lastActive: null
+    lastActive: null,
+    initialized: false
   }),
   
   getters: {
@@ -40,6 +42,11 @@ export const useUserStore = defineStore('user', {
     
     setFontSize(size: 'small' | 'medium' | 'large') {
       this.preferences.fontSize = size
+    },
+
+    initialize() {
+      this.initialized = true
+      this.updateLastActive()
     }
   }
 }) 

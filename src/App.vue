@@ -22,7 +22,15 @@ async function greet() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize stores if needed
+  if (!userStore.initialized) {
+    userStore.initialize()
+  }
+  if (!appStore.initialized) {
+    appStore.initialize()
+  }
+
   // Restore user name if it exists
   if (userStore.name) {
     name.value = userStore.name;

@@ -4,13 +4,15 @@ interface AppState {
   isLoading: boolean
   currentView: string
   errors: string[]
+  initialized: boolean
 }
 
 export const useAppStore = defineStore('app', {
   state: (): AppState => ({
     isLoading: false,
     currentView: 'welcome',
-    errors: []
+    errors: [],
+    initialized: false
   }),
   
   getters: {
@@ -32,6 +34,10 @@ export const useAppStore = defineStore('app', {
     
     clearErrors() {
       this.errors = []
+    },
+
+    initialize() {
+      this.initialized = true
     }
   }
 }) 
