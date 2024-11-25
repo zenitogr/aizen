@@ -31,7 +31,30 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "description": "Main window capability",
+          "windows": ["main", "splashscreen"],
+          "permissions": [
+            "fs:default",
+            "fs:read-file",
+            "fs:write-file",
+            "fs:create-dir",
+            "fs:read-dir",
+            "fs:remove-file",
+            "fs:remove-dir",
+            "fs:copy-file",
+            "fs:exists",
+            "path:default",
+            "http:default",
+            "app:default",
+            "resources:default",
+            "window:default"
+          ]
+        }
+      ]
     }
   },
   "bundle": {
