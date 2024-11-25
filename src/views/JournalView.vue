@@ -4,12 +4,16 @@ import { useJournalStore } from '../stores/journal';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import JournalEditor from '../components/journal/JournalEditor.vue';
+import BaseConfirmDialog from '../components/base/BaseConfirmDialog.vue';
 
 const journalStore = useJournalStore();
 
 const showEditor = computed(() => journalStore.isEditing);
 const entries = computed(() => journalStore.sortedEntries);
 const currentEntry = computed(() => journalStore.currentEntry);
+
+const showDeleteDialog = ref(false);
+const entryToDelete = ref<string | null>(null);
 
 function handleNewEntry() {
   journalStore.setEditing(true);
@@ -43,6 +47,25 @@ function formatDate(dateString: string) {
     day: 'numeric'
   });
 }
+
+function handleDeleteClick(event: Event, entryId: string) {
+  event.stopPropagation(); // Prevent opening the editor
+  entryToDelete.value = entryId;
+  showDeleteDialog.value = true;
+}
+
+async function confirmDelete() {
+  if (entryToDelete.value) {
+    await journalStore.deleteEntry(entryToDelete.value);
+    showDeleteDialog.value = false;
+    entryToDelete.value = null;
+  }
+}
+
+function cancelDelete() {
+  showDeleteDialog.value = false;
+  entryToDelete.value = null;
+}
 </script>
 
 <template>
@@ -69,6 +92,16 @@ function formatDate(dateString: string) {
           class="entry-card"
           @click="handleEditEntry(entry.id)"
         >
+          <div class="entry-actions">
+            <BaseButton 
+              variant="ghost"
+              size="sm"
+              class="delete-button"
+              @click="(e) => handleDeleteClick(e, entry.id)"
+            >
+              ×
+            </BaseButton>
+          </div>
           <h3>{{ entry.title }}</h3>
           <p class="entry-preview">{{ entry.content.slice(0, 150) }}...</p>
           <div class="entry-footer">
@@ -86,6 +119,16 @@ function formatDate(dateString: string) {
         </BaseCard>
       </div>
     </template>
+
+    <BaseConfirmDialog
+      :show="showDeleteDialog"
+      title="Delete Entry"
+      message="Are you sure you want to delete this journal entry? This action cannot be undone."
+      confirm-text="Delete"
+      cancel-text="Cancel"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -112,6 +155,7 @@ function formatDate(dateString: string) {
 
 .entry-card {
   cursor: pointer;
+  position: relative;
 }
 
 .entry-card:hover {
@@ -152,6 +196,36 @@ time {
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 0.75rem;
+}
+
+.entry-actions {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.entry-card:hover .entry-actions {
+  opacity: 1;
+}
+
+.delete-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--status-error);
+  border-color: var(--status-error);
+}
+
+.delete-button:hover {
+  background: var(--status-error);
+  color: var(--text-primary);
 }
 
 @media (max-width: 768px) {
