@@ -6,155 +6,146 @@ const greetMsg = ref("");
 const name = ref("");
 
 async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
 }
 </script>
 
 <template>
-  <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">
+        <span class="ai">Ai</span><span class="zen">ZEN</span>
+      </div>
+      <nav class="main-nav">
+        <button class="nav-button">Journal</button>
+        <button class="nav-button">Memory Vault</button>
+        <button class="nav-button">Mindfulness</button>
+      </nav>
+    </header>
 
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-  </main>
+    <main class="main-content">
+      <div class="welcome-card card">
+        <h1>Welcome to AiZEN</h1>
+        <p class="subtitle">Your personal space for growth and reflection</p>
+        
+        <div class="quick-actions">
+          <form class="greeting-form" @submit.prevent="greet">
+            <input 
+              id="greet-input" 
+              v-model="name" 
+              placeholder="Enter your name..."
+            />
+            <button type="submit">Greet</button>
+          </form>
+          <p class="greeting-message">{{ greetMsg }}</p>
+        </div>
+      </div>
+    </main>
+  </div>
 </template>
 
 <style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-
-</style>
-<style>
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
+.app-container {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
+  background: var(--background-dark);
+}
+
+.app-header {
+  background: var(--surface-dark);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-md) var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
+.logo .ai {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.row {
+.logo .zen {
+  color: var(--text-primary);
+}
+
+.main-nav {
   display: flex;
-  justify-content: center;
+  gap: var(--spacing-sm);
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+.nav-button {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
 }
 
-a:hover {
-  color: #535bf2;
+.nav-button:hover {
+  background: var(--surface-light);
+  color: var(--text-primary);
+  opacity: 1;
 }
 
-h1 {
-  text-align: center;
+.main-content {
+  flex: 1;
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+.welcome-card {
+  max-width: 600px;
+  width: 100%;
+  margin-top: var(--spacing-xl);
 }
 
-button {
-  cursor: pointer;
+.subtitle {
+  color: var(--text-secondary);
+  margin: var(--spacing-sm) 0 var(--spacing-lg);
 }
 
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+.quick-actions {
+  margin-top: var(--spacing-lg);
 }
 
-input,
-button {
-  outline: none;
+.greeting-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 
-#greet-input {
-  margin-right: 5px;
+.greeting-message {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
   }
 
-  a:hover {
-    color: #24c8db;
+  .main-nav {
+    width: 100%;
+    justify-content: center;
   }
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+  .welcome-card {
+    margin-top: var(--spacing-md);
   }
-  button:active {
-    background-color: #0f0f0f69;
+
+  .greeting-form {
+    flex-direction: column;
   }
 }
-
 </style>
