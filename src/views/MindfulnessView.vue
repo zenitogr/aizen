@@ -4,6 +4,7 @@ import { useSearchStore } from '../stores/search';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import SearchBar from '../components/search/SearchBar.vue';
+import HighlightedText from '../components/base/HighlightedText.vue';
 
 const searchStore = useSearchStore();
 
@@ -89,17 +90,30 @@ const filteredPractices = computed(() => {
         class="practice-card"
       >
         <div class="practice-header">
-          <h3>{{ practice.title }}</h3>
+          <h3>
+            <HighlightedText 
+              :text="practice.title"
+              :query="searchStore.query"
+            />
+          </h3>
           <span class="duration">{{ practice.duration }}</span>
         </div>
-        <p class="practice-description">{{ practice.description }}</p>
+        <p class="practice-description">
+          <HighlightedText 
+            :text="practice.description"
+            :query="searchStore.query"
+          />
+        </p>
         <div class="practice-tags">
           <span 
             v-for="tag in practice.tags" 
             :key="tag"
             class="tag"
           >
-            {{ tag }}
+            <HighlightedText 
+              :text="tag"
+              :query="searchStore.query"
+            />
           </span>
         </div>
         <BaseButton variant="secondary" class="start-button">

@@ -4,6 +4,7 @@ import { useSearchStore } from '../stores/search';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import SearchBar from '../components/search/SearchBar.vue';
+import HighlightedText from '../components/base/HighlightedText.vue';
 
 const searchStore = useSearchStore();
 const memories = ref([
@@ -70,17 +71,24 @@ const filteredMemories = computed(() => {
         class="memory-card"
       >
         <div class="memory-preview">
-          <!-- Placeholder for memory preview -->
           <div class="preview-placeholder"></div>
         </div>
-        <h3>{{ memory.title }}</h3>
+        <h3>
+          <HighlightedText 
+            :text="memory.title"
+            :query="searchStore.query"
+          />
+        </h3>
         <div class="memory-tags">
           <span 
             v-for="tag in memory.tags" 
             :key="tag" 
             class="tag"
           >
-            {{ tag }}
+            <HighlightedText 
+              :text="tag"
+              :query="searchStore.query"
+            />
           </span>
         </div>
         <time>{{ new Date(memory.date).toLocaleDateString() }}</time>
