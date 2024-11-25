@@ -1,31 +1,62 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { useUserStore } from './stores/user';
+import { useAppStore } from './stores/app';
+
+const userStore = useUserStore();
+const appStore = useAppStore();
 
 const greetMsg = ref("");
 const name = ref("");
 
 async function greet() {
-  greetMsg.value = await invoke("greet", { name: name.value });
+  try {
+    appStore.setLoading(true);
+    greetMsg.value = await invoke("greet", { name: name.value });
+    userStore.setName(name.value);
+  } catch (error) {
+    appStore.addError(error as string);
+  } finally {
+    appStore.setLoading(false);
+  }
 }
+
+onMounted(() => {
+  // Restore user name if it exists
+  if (userStore.name) {
+    name.value = userStore.name;
+  }
+});
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="app-container" :data-theme="userStore.currentTheme">
     <header class="app-header">
       <div class="logo">
         <span class="ai">Ai</span><span class="zen">ZEN</span>
       </div>
       <nav class="main-nav">
-        <button class="nav-button">Journal</button>
-        <button class="nav-button">Memory Vault</button>
-        <button class="nav-button">Mindfulness</button>
+        <button 
+          v-for="view in ['Journal', 'Memory Vault', 'Mindfulness']" 
+          :key="view"
+          class="nav-button"
+          :class="{ active: appStore.currentView === view.toLowerCase() }"
+          @click="appStore.setCurrentView(view.toLowerCase())"
+        >
+          {{ view }}
+        </button>
       </nav>
     </header>
 
     <main class="main-content">
+      <div v-if="appStore.hasErrors" class="error-banner">
+        <p v-for="error in appStore.errors" :key="error">{{ error }}</p>
+        <button @click="appStore.clearErrors()" class="error-close">×</button>
+      </div>
+
       <div class="welcome-card card">
-        <h1>Welcome to AiZEN</h1>
+        <h1>Welcome {{ userStore.name ? `, ${userStore.name}` : 'to AiZEN' }}</h1>
         <p class="subtitle">Your personal space for growth and reflection</p>
         
         <div class="quick-actions">
@@ -34,8 +65,11 @@ async function greet() {
               id="greet-input" 
               v-model="name" 
               placeholder="Enter your name..."
+              :disabled="appStore.isLoading"
             />
-            <button type="submit">Greet</button>
+            <button type="submit" :disabled="appStore.isLoading">
+              {{ appStore.isLoading ? 'Loading...' : 'Greet' }}
+            </button>
           </form>
           <p class="greeting-message">{{ greetMsg }}</p>
         </div>
@@ -147,5 +181,38 @@ async function greet() {
   .greeting-form {
     flex-direction: column;
   }
+}
+
+.error-banner {
+  background: var(--status-error);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-radius: 8px;
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.error-close {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-button.active {
+  background: var(--surface-light);
+  color: var(--text-primary);
+  border-color: var(--primary-color);
 }
 </style>
