@@ -1,16 +1,53 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useJournalStore } from '../stores/journal';
-import { useToastStore } from '../stores/toast';
+import { useSearchStore } from '../stores/search';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import JournalEditor from '../components/journal/JournalEditor.vue';
+import SearchBar from '../components/search/SearchBar.vue';
 
 const journalStore = useJournalStore();
-const toastStore = useToastStore();
+const searchStore = useSearchStore();
 
 const showEditor = computed(() => journalStore.isEditing);
-const entries = computed(() => journalStore.sortedEntries);
+
+// Filter entries based on search and filters
+const filteredEntries = computed(() => {
+  let entries = journalStore.sortedEntries;
+  const query = searchStore.query.toLowerCase();
+  const filters = searchStore.filters;
+
+  if (query) {
+    entries = entries.filter(entry => 
+      entry.title.toLowerCase().includes(query) ||
+      entry.content.toLowerCase().includes(query) ||
+      entry.tags.some(tag => tag.toLowerCase().includes(query))
+    );
+  }
+
+  if (filters.tags.length > 0) {
+    entries = entries.filter(entry =>
+      filters.tags.every(tag => entry.tags.includes(tag))
+    );
+  }
+
+  if (filters.type) {
+    entries = entries.filter(entry => entry.type === filters.type);
+  }
+
+  if (filters.dateRange?.start && filters.dateRange?.end) {
+    entries = entries.filter(entry => {
+      const entryDate = new Date(entry.createdAt).getTime();
+      const start = new Date(filters.dateRange!.start).getTime();
+      const end = new Date(filters.dateRange!.end).getTime();
+      return entryDate >= start && entryDate <= end;
+    });
+  }
+
+  return entries;
+});
+
 const currentEntry = computed(() => journalStore.currentEntry);
 
 function handleNewEntry() {
@@ -64,13 +101,17 @@ function handleDeleteClick(event: Event, entryId: string) {
     </template>
     <template v-else>
       <header class="view-header">
-        <h1>Journal</h1>
-        <BaseButton @click="handleNewEntry">New Entry</BaseButton>
+        <div class="header-content">
+          <h1>Journal</h1>
+          <BaseButton @click="handleNewEntry">New Entry</BaseButton>
+        </div>
+        
+        <SearchBar />
       </header>
 
       <div class="entries-grid">
         <BaseCard 
-          v-for="entry in entries" 
+          v-for="entry in filteredEntries" 
           :key="entry.id"
           variant="elevated"
           class="entry-card"
@@ -101,6 +142,15 @@ function handleDeleteClick(event: Event, entryId: string) {
             </div>
           </div>
         </BaseCard>
+      </div>
+
+      <div v-if="filteredEntries.length === 0" class="empty-state">
+        <p v-if="searchStore.query || searchStore.filters.tags.length > 0">
+          No entries match your search criteria
+        </p>
+        <p v-else>
+          No journal entries yet. Click "New Entry" to get started.
+        </p>
       </div>
     </template>
   </div>
@@ -202,6 +252,19 @@ time {
   color: var(--text-primary);
 }
 
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-xl);
+}
+
 @media (max-width: 768px) {
   .journal-view {
     padding: var(--spacing-md);
@@ -209,6 +272,12 @@ time {
   
   .view-header {
     margin-bottom: var(--spacing-lg);
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: stretch;
   }
 }
 </style> 
