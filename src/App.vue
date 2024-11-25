@@ -1,19 +1,25 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { onMounted } from "vue";
 import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 import { useAppStore } from './stores/app';
+import { useJournalStore } from './stores/journal';
 import BaseButton from './components/base/BaseButton.vue';
 import BaseCard from './components/base/BaseCard.vue';
 import ToastContainer from './components/base/ToastContainer.vue';
 import BaseLoadingOverlay from './components/base/BaseLoadingOverlay.vue';
+import BaseBadge from './components/base/BaseBadge.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();
+const journalStore = useJournalStore();
 
 const mainNavItems = ['journal', 'memory-vault', 'mindfulness'];
 const utilityNavItems = ['recently-deleted'];
+
+const recentlyDeletedCount = computed(() => journalStore.recentlyDeletedEntries.length);
 
 onMounted(async () => {
   if (!userStore.initialized) {
@@ -58,7 +64,14 @@ function navigateTo(route: string) {
             :class="{ active: appStore.currentView === view }"
             @click="navigateTo(view)"
           >
-            {{ view.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
+            <div class="button-with-badge">
+              {{ view.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
+              <BaseBadge 
+                v-if="view === 'recently-deleted'"
+                :count="recentlyDeletedCount"
+                variant="error"
+              />
+            </div>
           </BaseButton>
         </div>
       </nav>
@@ -240,6 +253,10 @@ function navigateTo(route: string) {
   .greeting-form {
     flex-direction: column;
   }
+
+  .button-with-badge {
+    justify-content: center;
+  }
 }
 
 .error-banner {
@@ -299,5 +316,11 @@ function navigateTo(route: string) {
     opacity: 0;
     transform: translateX(-20px);
   }
+}
+
+.button-with-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 </style>
