@@ -80,11 +80,13 @@
 - Journal editor with AI analysis
 - Loading overlay
 - Route transitions
+- Recently Deleted view
+- Entry type system
 
 🏗️ In Progress:
-- Recently Deleted views
 - Data persistence
 - Search and filtering
+- Admin dashboard planning
 
 ## Notes & Decisions Made
 - Using Groq for AI functionality

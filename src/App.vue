@@ -12,6 +12,9 @@ const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();
 
+const mainNavItems = ['journal', 'memory-vault', 'mindfulness'];
+const utilityNavItems = ['recently-deleted'];
+
 onMounted(async () => {
   if (!userStore.initialized) {
     userStore.initialize()
@@ -34,15 +37,30 @@ function navigateTo(route: string) {
         <span class="ai">Ai</span><span class="zen">ZEN</span>
       </div>
       <nav class="main-nav">
-        <BaseButton 
-          v-for="view in ['journal', 'memory-vault', 'mindfulness']" 
-          :key="view"
-          variant="ghost"
-          :class="{ active: appStore.currentView === view }"
-          @click="navigateTo(view)"
-        >
-          {{ view.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
-        </BaseButton>
+        <div class="nav-group">
+          <BaseButton 
+            v-for="view in mainNavItems" 
+            :key="view"
+            variant="ghost"
+            :class="{ active: appStore.currentView === view }"
+            @click="navigateTo(view)"
+          >
+            {{ view.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
+          </BaseButton>
+        </div>
+        <div class="nav-divider"></div>
+        <div class="nav-group utility">
+          <BaseButton 
+            v-for="view in utilityNavItems" 
+            :key="view"
+            variant="ghost"
+            size="sm"
+            :class="{ active: appStore.currentView === view }"
+            @click="navigateTo(view)"
+          >
+            {{ view.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
+          </BaseButton>
+        </div>
       </nav>
     </header>
 
@@ -121,7 +139,27 @@ function navigateTo(route: string) {
 
 .main-nav {
   display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.nav-group {
+  display: flex;
   gap: var(--spacing-sm);
+}
+
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+}
+
+.nav-group.utility {
+  opacity: 0.8;
+}
+
+.nav-group.utility:hover {
+  opacity: 1;
 }
 
 .nav-button {
@@ -180,7 +218,19 @@ function navigateTo(route: string) {
 
   .main-nav {
     width: 100%;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .nav-group {
+    width: 100%;
     justify-content: center;
+  }
+
+  .nav-divider {
+    width: 100%;
+    height: 1px;
+    margin: var(--spacing-xs) 0;
   }
 
   .welcome-card {
