@@ -8,7 +8,7 @@ export interface AIAnalysis {
 }
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-const GROQ_API_URL = 'https://api.groq.com/v1/chat/completions';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 export class AIService {
   private static async callGroq(prompt: string): Promise<any> {
@@ -38,14 +38,20 @@ export class AIService {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Groq API error (${response.status}): ${errorData.error?.message || response.statusText}`);
       }
 
       const data = await response.json();
       return data.choices[0].message.content;
     } catch (error) {
       console.error('Groq API call failed:', error);
-      throw error;
+      return JSON.stringify({
+        topics: ['personal'],
+        sentiment: 'neutral',
+        insights: ['AI analysis temporarily unavailable'],
+        suggestedTags: ['journal']
+      });
     }
   }
 
