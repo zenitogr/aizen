@@ -3,18 +3,28 @@ import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useUserStore } from './stores/user';
 import { useAppStore } from './stores/app';
+import BaseButton from './components/base/BaseButton.vue';
+import BaseInput from './components/base/BaseInput.vue';
+import BaseCard from './components/base/BaseCard.vue';
 
 const userStore = useUserStore();
 const appStore = useAppStore();
 
 const greetMsg = ref("");
 const name = ref("");
+const inputError = ref("");
 
 async function greet() {
+  if (!name.value) {
+    inputError.value = "Please enter your name";
+    return;
+  }
+  
   try {
     appStore.setLoading(true);
     greetMsg.value = await invoke("greet", { name: name.value });
     userStore.setName(name.value);
+    inputError.value = "";
   } catch (error) {
     appStore.addError(error as string);
   } finally {
@@ -23,7 +33,6 @@ async function greet() {
 }
 
 onMounted(async () => {
-  // Initialize stores if needed
   if (!userStore.initialized) {
     userStore.initialize()
   }
@@ -31,7 +40,6 @@ onMounted(async () => {
     appStore.initialize()
   }
 
-  // Restore user name if it exists
   if (userStore.name) {
     name.value = userStore.name;
   }
@@ -45,43 +53,57 @@ onMounted(async () => {
         <span class="ai">Ai</span><span class="zen">ZEN</span>
       </div>
       <nav class="main-nav">
-        <button 
+        <BaseButton 
           v-for="view in ['Journal', 'Memory Vault', 'Mindfulness']" 
           :key="view"
-          class="nav-button"
+          variant="ghost"
           :class="{ active: appStore.currentView === view.toLowerCase() }"
           @click="appStore.setCurrentView(view.toLowerCase())"
         >
           {{ view }}
-        </button>
+        </BaseButton>
       </nav>
     </header>
 
     <main class="main-content">
-      <div v-if="appStore.hasErrors" class="error-banner">
+      <BaseCard 
+        v-if="appStore.hasErrors" 
+        class="error-banner"
+        padding="sm"
+      >
         <p v-for="error in appStore.errors" :key="error">{{ error }}</p>
-        <button @click="appStore.clearErrors()" class="error-close">×</button>
-      </div>
+        <BaseButton 
+          variant="ghost" 
+          size="sm"
+          class="error-close"
+          @click="appStore.clearErrors()"
+        >
+          ×
+        </BaseButton>
+      </BaseCard>
 
-      <div class="welcome-card card">
+      <BaseCard variant="elevated" class="welcome-card">
         <h1>Welcome {{ userStore.name ? `, ${userStore.name}` : 'to AiZEN' }}</h1>
         <p class="subtitle">Your personal space for growth and reflection</p>
         
         <div class="quick-actions">
           <form class="greeting-form" @submit.prevent="greet">
-            <input 
-              id="greet-input" 
-              v-model="name" 
+            <BaseInput
+              v-model="name"
               placeholder="Enter your name..."
               :disabled="appStore.isLoading"
+              :error="inputError"
             />
-            <button type="submit" :disabled="appStore.isLoading">
+            <BaseButton 
+              type="submit"
+              :loading="appStore.isLoading"
+            >
               {{ appStore.isLoading ? 'Loading...' : 'Greet' }}
-            </button>
+            </BaseButton>
           </form>
           <p class="greeting-message">{{ greetMsg }}</p>
         </div>
-      </div>
+      </BaseCard>
     </main>
   </div>
 </template>
@@ -192,24 +214,18 @@ onMounted(async () => {
 }
 
 .error-banner {
-  background: var(--status-error);
-  color: var(--text-primary);
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  border-radius: 8px;
-  position: relative;
   width: 100%;
   max-width: 600px;
+  background: var(--status-error) !important;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  position: relative;
 }
 
 .error-close {
   position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
   padding: 0;
   width: 24px;
   height: 24px;
