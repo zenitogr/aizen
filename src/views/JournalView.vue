@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useJournalStore } from '../stores/journal';
+import { useToastStore } from '../stores/toast';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import JournalEditor from '../components/journal/JournalEditor.vue';
-import BaseConfirmDialog from '../components/base/BaseConfirmDialog.vue';
 
 const journalStore = useJournalStore();
+const toastStore = useToastStore();
 
 const showEditor = computed(() => journalStore.isEditing);
 const entries = computed(() => journalStore.sortedEntries);
 const currentEntry = computed(() => journalStore.currentEntry);
-
-const showDeleteDialog = ref(false);
-const entryToDelete = ref<string | null>(null);
 
 function handleNewEntry() {
   journalStore.setEditing(true);
@@ -49,22 +47,8 @@ function formatDate(dateString: string) {
 }
 
 function handleDeleteClick(event: Event, entryId: string) {
-  event.stopPropagation(); // Prevent opening the editor
-  entryToDelete.value = entryId;
-  showDeleteDialog.value = true;
-}
-
-async function confirmDelete() {
-  if (entryToDelete.value) {
-    await journalStore.deleteEntry(entryToDelete.value);
-    showDeleteDialog.value = false;
-    entryToDelete.value = null;
-  }
-}
-
-function cancelDelete() {
-  showDeleteDialog.value = false;
-  entryToDelete.value = null;
+  event.stopPropagation();
+  journalStore.softDeleteEntry(entryId);
 }
 </script>
 
@@ -119,16 +103,6 @@ function cancelDelete() {
         </BaseCard>
       </div>
     </template>
-
-    <BaseConfirmDialog
-      :show="showDeleteDialog"
-      title="Delete Entry"
-      message="Are you sure you want to delete this journal entry? This action cannot be undone."
-      confirm-text="Delete"
-      cancel-text="Cancel"
-      @confirm="confirmDelete"
-      @cancel="cancelDelete"
-    />
   </div>
 </template>
 

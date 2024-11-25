@@ -5,6 +5,8 @@ import { useUserStore } from './stores/user';
 import { useAppStore } from './stores/app';
 import BaseButton from './components/base/BaseButton.vue';
 import BaseCard from './components/base/BaseCard.vue';
+import ToastContainer from './components/base/ToastContainer.vue';
+import BaseLoadingOverlay from './components/base/BaseLoadingOverlay.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -72,6 +74,9 @@ function navigateTo(route: string) {
         </transition>
       </router-view>
     </main>
+
+    <ToastContainer />
+    <BaseLoadingOverlay />
   </div>
 </template>
 
