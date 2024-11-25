@@ -2,11 +2,13 @@ import { defineStore } from 'pinia'
 import { useToastStore } from './toast'
 
 export type DeletionState = 'active' | 'recently_deleted' | 'hidden'
+export type EntryType = 'journal' | 'memory' | 'mindfulness'
 
 export interface JournalEntry {
   id: string
   title: string
   content: string
+  type: EntryType
   createdAt: string
   updatedAt: string
   deletedAt?: string
@@ -61,9 +63,10 @@ export const useJournalStore = defineStore('journal', {
   },
 
   actions: {
-    async createEntry(entry: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'state'>) {
+    async createEntry(entry: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'state' | 'type'>) {
       const newEntry: JournalEntry = {
         id: crypto.randomUUID(),
+        type: 'journal',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         state: 'active',
