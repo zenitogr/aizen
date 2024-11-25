@@ -192,3 +192,38 @@ Cards:
 - Padding: 16px
 - Border Radius: 12px
 - Background: var(--surface-dark)
+
+AI INTEGRATION
+-------------
+Provider: Groq (groq.com)
+- Fast, free AI service
+- High-quality language models
+- Low latency responses
+
+Use Cases:
+1. Journal Analysis
+   - Sentiment analysis
+   - Topic extraction
+   - Personal insights
+   - Writing suggestions
+
+2. Writing Prompts
+   - Daily reflection prompts
+   - Personalized questions
+   - Growth-oriented topics
+
+3. Memory Organization
+   - Content tagging
+   - Memory categorization
+   - Relationship mapping
+
+4. Mindfulness Guidance
+   - Personalized meditation scripts
+   - Breathing exercise variations
+   - Reflection prompts
+
+Integration Strategy:
+- Use Groq's API for all AI operations
+- Implement rate limiting and caching
+- Ensure privacy by processing data locally when possible
+- Use streaming for real-time responses
