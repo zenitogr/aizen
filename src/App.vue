@@ -61,7 +61,16 @@ function navigateTo(route: string) {
         </BaseButton>
       </BaseCard>
 
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <transition 
+          name="fade" 
+          mode="out-in"
+          @before-leave="appStore.setLoading(true)"
+          @after-enter="appStore.setLoading(false)"
+        >
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -203,5 +212,37 @@ function navigateTo(route: string) {
   background: var(--surface-light);
   color: var(--text-primary);
   border-color: var(--primary-color);
+}
+
+/* Route Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Optional: Add slide transition for mobile */
+@media (max-width: 768px) {
+  .fade-enter-active {
+    transition: all 0.2s ease-out;
+  }
+  
+  .fade-leave-active {
+    transition: all 0.2s ease-in;
+  }
+  
+  .fade-enter-from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  
+  .fade-leave-to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
 }
 </style>
