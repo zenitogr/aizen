@@ -4,6 +4,7 @@ import { useSearchStore } from '../../stores/search';
 import BaseInput from '../base/BaseInput.vue';
 import BaseButton from '../base/BaseButton.vue';
 import BaseCard from '../base/BaseCard.vue';
+import DateRangePicker from '../base/DateRangePicker.vue';
 
 const searchStore = useSearchStore();
 const showFilters = ref(false);
@@ -29,6 +30,14 @@ function clearSearch() {
 
 function removeTag(tag: string) {
   searchStore.removeTag(tag);
+}
+
+function handleDateRangeChange(start: string, end: string) {
+  if (start && end) {
+    searchStore.setDateRange(start, end);
+  } else {
+    searchStore.clearDateRange();
+  }
 }
 </script>
 
@@ -69,6 +78,16 @@ function removeTag(tag: string) {
     <Transition name="slide">
       <BaseCard v-if="showFilters" class="filters-panel" padding="sm">
         <div class="filters-content">
+          <div class="filter-group">
+            <h4>Date Range</h4>
+            <DateRangePicker
+              :start-date="searchStore.filters.dateRange?.start"
+              :end-date="searchStore.filters.dateRange?.end"
+              @update:start-date="(date) => handleDateRangeChange(date, searchStore.filters.dateRange?.end || '')"
+              @update:end-date="(date) => handleDateRangeChange(searchStore.filters.dateRange?.start || '', date)"
+            />
+          </div>
+
           <div class="filter-group">
             <h4>Tags</h4>
             <div class="tags">
@@ -157,6 +176,14 @@ function removeTag(tag: string) {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+}
+
+.filter-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
 }
 
 .filter-group h4 {
