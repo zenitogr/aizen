@@ -16,7 +16,8 @@ export const useAppStore = defineStore('app', {
   }),
   
   getters: {
-    hasErrors: (state) => state.errors.length > 0
+    hasErrors: (state) => state.errors.length > 0,
+    isRecentlyDeletedView: (state) => state.currentView === 'recently-deleted'
   },
   
   actions: {
@@ -38,6 +39,24 @@ export const useAppStore = defineStore('app', {
 
     initialize() {
       this.initialized = true
+    },
+
+    async resetStore(): Promise<boolean> {
+      // @ts-ignore - resetStorage is added by plugin
+      const success = await this.resetStorage()
+      if (!success) {
+        this.addError('Failed to reset store')
+      }
+      return success
+    },
+
+    async reloadStore(): Promise<boolean> {
+      // @ts-ignore - reloadFromStorage is added by plugin
+      const success = await this.reloadFromStorage()
+      if (!success) {
+        this.addError('Failed to reload store')
+      }
+      return success
     }
   }
 }) 

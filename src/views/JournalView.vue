@@ -2,71 +2,53 @@
 import { ref, computed } from 'vue';
 import { useJournalStore } from '../stores/journal';
 import { useSearchStore } from '../stores/search';
-import BaseCard from '../components/base/BaseCard.vue';
-import BaseButton from '../components/base/BaseButton.vue';
 import JournalEditor from '../components/journal/JournalEditor.vue';
 import SearchBar from '../components/search/SearchBar.vue';
+import BaseButton from '../components/base/BaseButton.vue';
+import BaseCard from '../components/base/BaseCard.vue';
 import HighlightedText from '../components/base/HighlightedText.vue';
+import { useAppStore } from '../stores/app';
 
 const journalStore = useJournalStore();
 const searchStore = useSearchStore();
+const appStore = useAppStore();
 
 const showEditor = computed(() => journalStore.isEditing);
-
-// Filter entries based on search and filters
-const filteredEntries = computed(() => {
-  let entries = journalStore.sortedEntries;
-  const query = searchStore.query.toLowerCase();
-  const filters = searchStore.filters;
-
-  if (query) {
-    entries = entries.filter(entry => 
-      entry.title.toLowerCase().includes(query) ||
-      entry.content.toLowerCase().includes(query) ||
-      entry.tags.some(tag => tag.toLowerCase().includes(query))
-    );
-  }
-
-  if (filters.tags.length > 0) {
-    entries = entries.filter(entry =>
-      filters.tags.every(tag => entry.tags.includes(tag))
-    );
-  }
-
-  if (filters.type) {
-    entries = entries.filter(entry => entry.type === filters.type);
-  }
-
-  if (filters.dateRange?.start && filters.dateRange?.end) {
-    entries = entries.filter(entry => {
-      const entryDate = new Date(entry.createdAt).getTime();
-      const start = new Date(filters.dateRange!.start).getTime();
-      const end = new Date(filters.dateRange!.end).getTime();
-      return entryDate >= start && entryDate <= end;
-    });
-  }
-
-  return entries;
-});
-
 const currentEntry = computed(() => journalStore.currentEntry);
 
+// Make sure we have entries before filtering
+const filteredEntries = computed(() => {
+  const entries = journalStore.activeEntries;
+  if (!entries || !Array.isArray(entries)) return [];
+  if (!searchStore.query) return entries;
+  
+  const query = searchStore.query.toLowerCase();
+  return entries.filter(entry => 
+    entry?.title?.toLowerCase().includes(query) ||
+    entry?.content?.toLowerCase().includes(query) ||
+    entry?.tags?.some(tag => tag.toLowerCase().includes(query))
+  );
+});
+
 function handleNewEntry() {
-  journalStore.setEditing(true);
+  journalStore.setEditing(true, null);
 }
 
 function handleEditEntry(entryId: string) {
   journalStore.setEditing(true, entryId);
 }
 
-async function handleSaveEntry({ title, content }: { title: string, content: string }) {
+async function handleSaveEntry(data: { title: string; content: string; tags?: string[] }) {
   if (currentEntry.value) {
-    await journalStore.updateEntry(currentEntry.value.id, { title, content });
+    await journalStore.updateEntry(currentEntry.value.id, {
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
   } else {
-    await journalStore.createEntry({ 
-      title, 
-      content,
-      tags: [],
+    await journalStore.createEntry({
+      title: data.title,
+      content: data.content,
+      tags: data.tags || []
     });
   }
   journalStore.setEditing(false);
@@ -96,6 +78,7 @@ function handleDeleteClick(event: Event, entryId: string) {
       <JournalEditor
         :initial-title="currentEntry?.title"
         :initial-content="currentEntry?.content"
+        :initial-tags="currentEntry?.tags"
         @save="handleSaveEntry"
         @cancel="handleCancel"
       />
@@ -110,61 +93,62 @@ function handleDeleteClick(event: Event, entryId: string) {
         <SearchBar />
       </header>
 
-      <div class="entries-grid">
-        <BaseCard 
-          v-for="entry in filteredEntries" 
-          :key="entry.id"
-          variant="elevated"
-          class="entry-card"
-          @click="handleEditEntry(entry.id)"
-        >
-          <div class="entry-actions">
-            <BaseButton 
-              variant="ghost"
-              size="sm"
-              class="delete-button"
-              @click="(e) => handleDeleteClick(e, entry.id)"
-            >
-              ×
-            </BaseButton>
-          </div>
-          <h3>
-            <HighlightedText 
-              :text="entry.title"
-              :query="searchStore.query"
-            />
-          </h3>
-          <p class="entry-preview">
-            <HighlightedText 
-              :text="entry.content.slice(0, 150) + '...'"
-              :query="searchStore.query"
-            />
-          </p>
-          <div class="entry-footer">
-            <time>{{ formatDate(entry.createdAt) }}</time>
-            <div class="entry-tags">
-              <span 
-                v-for="tag in entry.tags" 
-                :key="tag"
-                class="tag"
-              >
+      <div v-if="appStore.isLoading" class="loading-state">
+        <p>Loading entries...</p>
+      </div>
+      <div v-else>
+        <div class="entries-grid" v-if="filteredEntries.length > 0">
+          <BaseCard 
+            v-for="entry in filteredEntries" 
+            :key="entry.id"
+            variant="elevated"
+            class="entry-card"
+            @click="handleEditEntry(entry.id)"
+          >
+            <div class="entry-header">
+              <h3>
                 <HighlightedText 
-                  :text="tag"
+                  :text="entry.title"
                   :query="searchStore.query"
                 />
-              </span>
+              </h3>
+              <BaseButton 
+                variant="ghost"
+                size="sm"
+                class="delete-button"
+                @click="(e) => handleDeleteClick(e, entry.id)"
+              >
+                ×
+              </BaseButton>
             </div>
-          </div>
-        </BaseCard>
-      </div>
 
-      <div v-if="filteredEntries.length === 0" class="empty-state">
-        <p v-if="searchStore.query || searchStore.filters.tags.length > 0">
-          No entries match your search criteria
-        </p>
-        <p v-else>
-          No journal entries yet. Click "New Entry" to get started.
-        </p>
+            <p class="entry-preview">
+              <HighlightedText 
+                :text="entry.content.slice(0, 150) + '...'"
+                :query="searchStore.query"
+              />
+            </p>
+
+            <div class="entry-meta">
+              <time>{{ formatDate(entry.createdAt) }}</time>
+              <div class="entry-tags">
+                <span 
+                  v-for="tag in entry.tags" 
+                  :key="tag"
+                  class="tag"
+                >
+                  <HighlightedText 
+                    :text="tag"
+                    :query="searchStore.query"
+                  />
+                </span>
+              </div>
+            </div>
+          </BaseCard>
+        </div>
+        <div v-else class="empty-state">
+          <p>No journal entries yet</p>
+        </div>
       </div>
     </template>
   </div>
@@ -179,10 +163,14 @@ function handleDeleteClick(event: Event, entryId: string) {
 }
 
 .view-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
 }
 
 .entries-grid {
@@ -193,11 +181,28 @@ function handleDeleteClick(event: Event, entryId: string) {
 
 .entry-card {
   cursor: pointer;
-  position: relative;
+  transition: transform 0.2s ease;
 }
 
 .entry-card:hover {
   transform: translateY(-2px);
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-sm);
+}
+
+.delete-button {
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
 }
 
 .entry-preview {
@@ -211,11 +216,8 @@ function handleDeleteClick(event: Event, entryId: string) {
   -webkit-box-orient: vertical;
 }
 
-.entry-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--spacing-sm);
+.entry-meta {
+  margin-top: var(--spacing-md);
 }
 
 time {
@@ -226,6 +228,8 @@ time {
 .entry-tags {
   display: flex;
   gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  flex-wrap: wrap;
 }
 
 .tag {
@@ -236,44 +240,13 @@ time {
   font-size: 0.75rem;
 }
 
-.entry-actions {
-  position: absolute;
-  top: var(--spacing-xs);
-  right: var(--spacing-xs);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.entry-card:hover .entry-actions {
-  opacity: 1;
-}
-
-.delete-button {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border-radius: 50%;
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--status-error);
-  border-color: var(--status-error);
-}
-
-.delete-button:hover {
-  background: var(--status-error);
-  color: var(--text-primary);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-}
-
 .empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-xl);
+}
+
+.loading-state {
   text-align: center;
   color: var(--text-secondary);
   padding: var(--spacing-xl);
@@ -284,10 +257,6 @@ time {
     padding: var(--spacing-md);
   }
   
-  .view-header {
-    margin-bottom: var(--spacing-lg);
-  }
-
   .header-content {
     flex-direction: column;
     gap: var(--spacing-sm);

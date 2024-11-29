@@ -8,10 +8,18 @@ function sleep(seconds) {
 
 // Setup function
 async function setup() {
-  console.log('Performing really heavy frontend setup task...')
-  await sleep(3);
-  console.log('Frontend setup task complete!')
-  await invoke('set_complete', {task: 'frontend'})
+  try {
+    console.log('Performing really heavy frontend setup task...')
+    await sleep(3);
+    await invoke('set_complete', {task: 'frontend'})
+  } catch (error) {
+    console.error('Frontend setup failed:', error);
+    // Update UI to show error state
+    const status = document.querySelector('.status');
+    if (status) {
+      status.textContent = 'Setup failed. Please restart the application.';
+    }
+  }
 }
 
 // Handle relaunch

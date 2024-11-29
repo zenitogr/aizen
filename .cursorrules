@@ -1,3 +1,5 @@
 with every step, every addition, every change, please update the development plan file in docs/DEVELOPMENT.md
 
 with every AiZEN design change, please update the design plan file in docs/AiZEN-design.txt
+
+do not change tauri.conf.json and cargo.toml files. ask me if you need me to add something or change something

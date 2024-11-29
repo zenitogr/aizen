@@ -1,23 +1,39 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useJournalStore } from '../stores/journal';
 import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import BaseInput from '../components/base/BaseInput.vue';
+import HighlightedText from '../components/base/HighlightedText.vue';
 
 const journalStore = useJournalStore();
 const searchQuery = ref('');
 
+// Add debug logging
+onMounted(async () => {
+  console.log('Recently Deleted View Mounted');
+  // Ensure store is initialized
+  await journalStore.initialize();
+  console.log('All entries:', journalStore.entries);
+  console.log('Recently deleted entries:', journalStore.recentlyDeletedEntries);
+});
+
 const recentlyDeleted = computed(() => {
+  console.log('Computing recently deleted entries');
   const entries = journalStore.recentlyDeletedEntries;
+  console.log('Base entries:', entries);
+  
   if (!searchQuery.value) return entries;
   
   const query = searchQuery.value.toLowerCase();
-  return entries.filter(entry => 
-    entry.title.toLowerCase().includes(query) ||
-    entry.content.toLowerCase().includes(query) ||
-    entry.tags.some(tag => tag.toLowerCase().includes(query))
+  const filtered = entries.filter(entry => 
+    entry?.title?.toLowerCase().includes(query) ||
+    entry?.content?.toLowerCase().includes(query) ||
+    entry?.tags?.some(tag => tag.toLowerCase().includes(query))
   );
+  
+  console.log('Filtered entries:', filtered);
+  return filtered;
 });
 
 function formatDate(dateString: string) {

@@ -8,13 +8,13 @@ const toastStore = useToastStore();
 <template>
   <div class="toast-container">
     <BaseToast
-      v-for="toast in toastStore.toasts"
-      :key="toast.id"
-      :message="toast.message"
-      :duration="toast.duration"
-      :show-undo="toast.showUndo"
-      @close="toastStore.remove(toast.id)"
-      @undo="toast.undoAction?.(); toastStore.remove(toast.id)"
+      v-for="message in toastStore.messages"
+      :key="message.id"
+      :text="message.text"
+      :type="message.type"
+      :show-undo="!!message.undoAction"
+      @close="toastStore.removeToast(message.id)"
+      @undo="message.undoAction?.(); toastStore.removeToast(message.id)"
     />
   </div>
 </template>
@@ -22,17 +22,24 @@ const toastStore = useToastStore();
 <style scoped>
 .toast-container {
   position: fixed;
-  bottom: var(--spacing-lg);
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
   z-index: 1000;
   display: flex;
-  flex-direction: column-reverse;
-  gap: var(--spacing-sm);
+  flex-direction: column;
+  align-items: flex-end;
   pointer-events: none;
 }
 
-.toast-container :deep(.toast) {
+.toast-container :deep(.base-toast) {
   pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    left: var(--spacing-md);
+  }
 }
 </style> 

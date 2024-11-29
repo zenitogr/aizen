@@ -1,40 +1,29 @@
 [package]
 name = "aizen"
 version = "0.1.0"
-description = "A personal haven app"
+description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "aizen_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [build-dependencies]
-tauri-build = { version = "2.0.0-beta.9", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2.0.0-beta.11", features = [
-    "devtools",  # For development tools
-    "compression", # For asset protocol
-    "native-tls-vendored", # For HTTPS support
-    "image-png", # For PNG image support
-    "config-json5" # For JSON5 config support
+tauri = { version = "2.1.1", features = [
+    "tray-icon"
 ] }
-tauri-plugin-fs = "2.0.0-beta.2"
-tauri-plugin-process = "2.0.0-beta.2"
-
-[features]
-# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
-custom-protocol = ["tauri/custom-protocol"]
-
-[profile.release]
-panic = "abort" # Strip expensive panic clean-up logic
-codegen-units = 1 # Compile crates one after another so the compiler can optimize better
-lto = true # Enables link to optimizations
-opt-level = "s" # Optimize for binary size
-strip = true # Remove debug symbols
-
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1.41.0", features = ["full"] }
+tauri-plugin-process = "2.0.0-beta"
+tauri-plugin-fs = { version = "2.0.0-beta" }

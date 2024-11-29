@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { useToastStore } from './toast'
+import { useLogsStore } from './logs'
+import { Storage } from '../utils/storage'
 
 export type DeletionState = 'active' | 'recently_deleted' | 'hidden'
 export type EntryType = 'journal' | 'memory' | 'mindfulness'
@@ -34,35 +36,106 @@ export const useJournalStore = defineStore('journal', {
     entries: [],
     isEditing: false,
     currentEntryId: null,
-    recentlyDeletedTimeout: 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
+    recentlyDeletedTimeout: 30 * 24 * 60 * 60 * 1000
   }),
 
   getters: {
-    activeEntries(state): JournalEntry[] {
-      return state.entries.filter(entry => entry.state === 'active')
-    },
-
-    recentlyDeletedEntries(state): JournalEntry[] {
-      return state.entries.filter(entry => entry.state === 'recently_deleted')
-    },
-
-    hiddenEntries(state): JournalEntry[] {
-      return state.entries.filter(entry => entry.state === 'hidden')
-    },
-
-    sortedEntries(state): JournalEntry[] {
-      return state.entries
-        .filter(entry => entry.state === 'active')
+    activeEntries(): JournalEntry[] {
+      if (!Array.isArray(this.entries)) {
+        console.warn('Entries is not an array:', this.entries)
+        return []
+      }
+      return this.entries
+        .filter(entry => entry?.state === 'active')
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     },
-    
-    currentEntry(state): JournalEntry | null {
-      if (!state.currentEntryId) return null;
-      return state.entries.find(entry => entry.id === state.currentEntryId) || null;
+
+    recentlyDeletedEntries(): JournalEntry[] {
+      if (!Array.isArray(this.entries)) {
+        console.warn('Entries is not an array:', this.entries)
+        return []
+      }
+      return this.entries
+        .filter(entry => entry?.state === 'recently_deleted')
+        .sort((a, b) => 
+          new Date(b.deletedAt || 0).getTime() - new Date(a.deletedAt || 0).getTime()
+        )
+    },
+
+    hiddenEntries(): JournalEntry[] {
+      return this.entries
+        .filter(entry => entry?.state === 'hidden')
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    },
+
+    currentEntry(): JournalEntry | null {
+      if (!this.currentEntryId) return null
+      return this.entries.find(entry => entry.id === this.currentEntryId) || null
     }
   },
 
   actions: {
+    setEditing(isEditing: boolean, entryId: string | null = null) {
+      this.isEditing = isEditing
+      this.currentEntryId = entryId
+    },
+
+    async initialize() {
+      const logsStore = useLogsStore()
+      try {
+        await logsStore.addLog({
+          level: 'info',
+          category: 'journal',
+          action: 'initialize',
+          message: 'Initializing journal store',
+          status: 'pending'
+        })
+
+        const savedEntries = await Storage.load('journal-entries')
+        
+        if (savedEntries && Array.isArray(savedEntries)) {
+          this.entries = [...savedEntries]
+          await logsStore.addLog({
+            level: 'info',
+            category: 'journal',
+            action: 'initialize',
+            message: `Loaded ${savedEntries.length} entries`,
+            details: { entryCount: savedEntries.length },
+            status: 'success'
+          })
+        } else {
+          this.entries = []
+          await logsStore.addLog({
+            level: 'warning',
+            category: 'journal',
+            action: 'initialize',
+            message: 'No valid entries found, starting with empty array',
+            status: 'success'
+          })
+        }
+      } catch (error) {
+        await logsStore.addLog({
+          level: 'error',
+          category: 'journal',
+          action: 'initialize',
+          message: 'Failed to initialize journal store',
+          error: error instanceof Error ? error.message : String(error),
+          status: 'failure'
+        })
+        this.entries = []
+      }
+    },
+
+    async saveState() {
+      console.log('Saving journal state:', this.entries)
+      try {
+        await Storage.save('journal-entries', this.entries)
+        console.log('State saved successfully')
+      } catch (error) {
+        console.error('Failed to save journal state:', error)
+      }
+    },
+
     async createEntry(entry: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt' | 'state' | 'type'>) {
       const newEntry: JournalEntry = {
         id: crypto.randomUUID(),
@@ -74,6 +147,7 @@ export const useJournalStore = defineStore('journal', {
       }
       
       this.entries.push(newEntry)
+      await this.saveState()
       return newEntry
     },
 
@@ -88,59 +162,110 @@ export const useJournalStore = defineStore('journal', {
     },
 
     async softDeleteEntry(id: string) {
-      const entry = this.entries.find(e => e.id === id)
-      if (entry) {
+      const logsStore = useLogsStore()
+      await logsStore.addLog({
+        level: 'info',
+        category: 'journal',
+        action: 'soft_delete',
+        message: `Attempting to soft delete entry: ${id}`,
+        status: 'pending'
+      })
+
+      const index = this.entries.findIndex(e => e.id === id)
+      
+      if (index !== -1) {
+        const entry = this.entries[index]
         const toastStore = useToastStore()
         const previousState = entry.state
         
-        entry.state = 'recently_deleted'
-        entry.deletedAt = new Date().toISOString()
+        // Create a new array to ensure reactivity
+        this.entries = [
+          ...this.entries.slice(0, index),
+          {
+            ...entry,
+            state: 'recently_deleted',
+            deletedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          ...this.entries.slice(index + 1)
+        ]
 
-        // Schedule move to hidden after timeout
-        setTimeout(() => {
-          if (entry.state === 'recently_deleted') {
-            entry.state = 'hidden'
+        await this.saveState()
+        await logsStore.addLog({
+          level: 'info',
+          category: 'journal',
+          action: 'soft_delete',
+          message: `Successfully soft deleted entry: ${entry.title}`,
+          details: { entryId: id, title: entry.title },
+          status: 'success'
+        })
+
+        // Set up auto-hide after 30 days
+        const timeoutId = setTimeout(async () => {
+          const currentIndex = this.entries.findIndex(e => e.id === id)
+          if (currentIndex !== -1 && this.entries[currentIndex].state === 'recently_deleted') {
+            this.entries = [
+              ...this.entries.slice(0, currentIndex),
+              {
+                ...this.entries[currentIndex],
+                state: 'hidden',
+                updatedAt: new Date().toISOString()
+              },
+              ...this.entries.slice(currentIndex + 1)
+            ]
+            await this.saveState()
           }
         }, this.recentlyDeletedTimeout)
 
         // Show undo toast
         toastStore.showUndoToast(
           `"${entry.title}" moved to Recently Deleted`,
-          () => {
-            entry.state = previousState
-            entry.deletedAt = undefined
+          async () => {
+            const currentIndex = this.entries.findIndex(e => e.id === id)
+            if (currentIndex !== -1) {
+              this.entries = [
+                ...this.entries.slice(0, currentIndex),
+                {
+                  ...this.entries[currentIndex],
+                  state: previousState,
+                  deletedAt: undefined,
+                  updatedAt: new Date().toISOString()
+                },
+                ...this.entries.slice(currentIndex + 1)
+              ]
+              clearTimeout(timeoutId)
+              await this.saveState()
+            }
           }
         )
+      } else {
+        await logsStore.addLog({
+          level: 'error',
+          category: 'journal',
+          action: 'soft_delete',
+          message: `Entry not found: ${id}`,
+          status: 'failure'
+        })
       }
     },
 
     async restoreEntry(id: string) {
-      const entry = this.entries.find(e => e.id === id)
-      if (entry && entry.state !== 'active') {
-        entry.state = 'active'
-        entry.deletedAt = undefined
-        entry.updatedAt = new Date().toISOString()
+      const entry = this.entries.find(e => e.id === id);
+      if (entry) {
+        entry.state = 'active';
+        entry.deletedAt = undefined;
+        entry.updatedAt = new Date().toISOString();
+        await this.saveState();
       }
     },
 
     async hideEntry(id: string) {
-      const entry = this.entries.find(e => e.id === id)
+      const entry = this.entries.find(e => e.id === id);
       if (entry) {
-        entry.state = 'hidden'
-        entry.updatedAt = new Date().toISOString()
+        entry.state = 'hidden';
+        entry.updatedAt = new Date().toISOString();
+        await this.saveState();
       }
-    },
-
-    async permanentlyDeleteEntry(id: string) {
-      const index = this.entries.findIndex(e => e.id === id)
-      if (index !== -1) {
-        this.entries.splice(index, 1)
-      }
-    },
-
-    setEditing(isEditing: boolean, entryId: string | null = null) {
-      this.isEditing = isEditing
-      this.currentEntryId = entryId
     }
   }
 }) 

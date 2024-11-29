@@ -1,35 +1,36 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { createHighlightedHTML } from '../../utils/highlight';
 
-interface Props {
+const props = defineProps<{
   text: string
   query: string
-  tag?: string
+}>()
+
+const { text: textProp, query: queryProp } = props;
+
+function highlightText(text: string, query: string) {
+  if (!query) return text
+  
+  const regex = new RegExp(`(${query})`, 'gi')
+  return text.replace(regex, '<mark>$1</mark>')
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  tag: 'span'
+const parts = computed(() => {
+  if (!queryProp || !textProp) return [textProp];
+  return highlightText(textProp, queryProp);
 });
-
-const highlightedHTML = computed(() => 
-  createHighlightedHTML(props.text, props.query)
-);
 </script>
 
 <template>
-  <component 
-    :is="tag" 
-    v-html="highlightedHTML"
-    class="highlighted-text"
-  />
+  <span v-html="parts"></span>
 </template>
 
-<style>
-.highlighted-text mark {
-  background-color: rgba(138, 43, 226, 0.2);
-  color: inherit;
+<style scoped>
+:deep(mark) {
+  background-color: var(--primary-color);
+  color: var(--text-primary);
   padding: 0 2px;
   border-radius: 2px;
+  font-weight: 500;
 }
 </style> 

@@ -32,10 +32,10 @@
 - BaseToast
 - ToastContainer
 - BaseLoadingOverlay
+- HighlightedText
 - JournalEditor
 - DateRangePicker
 - TagInput
-- HighlightedText
 
 ✅ Views Created
 - HomeView
@@ -49,7 +49,7 @@
    - [x] Implement soft deletion system
    - [x] Add toast notifications with undo
    - [x] Create "Recently Deleted" views
-   - [ ] Add data persistence with Tauri
+   - [x] Add data persistence with Pinia
    - [ ] Set up backup system
 
 2. Search & Organization
@@ -90,8 +90,11 @@
 - Search system with filters
 - Tag management system
 - Tag suggestions system
+- Updated Tauri capabilities
 
 🏗️ In Progress:
+- Global theming system
+- Base component styling
 - Tag analytics
 - Search analytics
 - Data persistence
@@ -103,3 +106,41 @@
 - All content preserved in hidden state for admin access
 - Added comprehensive search and filter system
 - Implemented tag-based organization
+- Added comprehensive Tauri capabilities for file operations and notifications
+- Fixed Tauri capability permissions to use correct identifiers
+- Updated Tauri capabilities to match 2.0 specification
+- Dialog and notification permissions moved to tauri.conf.json
+- Updated Tauri capabilities to use proper v2 permission structure:
+  - Added core and plugin default permissions
+  - Configured scoped filesystem access
+  - Added notification and dialog permissions
+- Enabled required Tauri plugins in Cargo.toml:
+  - app-all
+  - tray
+  - notification
+  - dialog
+  - fs-all
+  - window-all
+- Updated Tauri and plugins to version 2.1.1 for better stability and feature support
+- Updated tauri.conf.json to match Tauri v2 schema:
+  - Removed deprecated allowlist in favor of capabilities
+  - Added required window labels
+  - Moved configs under app section
+  - Added asset protocol security config
+- Added Pinia store persistence using localStorage
+- Implemented automatic state recovery between sessions
+
+## Updates
+- Cleaned up unused imports in storage.ts
+- Fixed type definition for logs store using ReturnType utility type
+- Added storage initialization verification system
+- Improved storage system reliability with init check file
+- Added error handling for storage initialization failures
+
+# Development Plan Updates
+
+## Debugging
+- Added debug logging to main window initialization
+- Implemented error boundaries in Vue application
+- Added global error handling for Vue instance
+- Enhanced development tools accessibility

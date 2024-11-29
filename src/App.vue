@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from './stores/user';
 import { useAppStore } from './stores/app';
 import { useJournalStore } from './stores/journal';
+import { useLogsStore } from './stores/logs';
 import BaseButton from './components/base/BaseButton.vue';
 import BaseCard from './components/base/BaseCard.vue';
 import ToastContainer from './components/base/ToastContainer.vue';
@@ -15,24 +16,82 @@ const router = useRouter();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const journalStore = useJournalStore();
+const logsStore = useLogsStore();
 
 const mainNavItems = ['journal', 'memory-vault', 'mindfulness'];
-const utilityNavItems = ['analytics', 'recently-deleted'];
+const utilityNavItems = ['analytics', 'recently-deleted', 'logs'];
 
 const recentlyDeletedCount = computed(() => journalStore.recentlyDeletedEntries.length);
 
 onMounted(async () => {
-  if (!userStore.initialized) {
-    userStore.initialize()
-  }
-  if (!appStore.initialized) {
-    appStore.initialize()
+  try {
+    await logsStore.addLog({
+      level: 'info',
+      category: 'system',
+      action: 'app_mount',
+      message: 'App component mounted',
+      status: 'pending'
+    });
+
+    if (!userStore.initialized) {
+      await userStore.initialize();
+    }
+    if (!appStore.initialized) {
+      await appStore.initialize();
+    }
+
+    await logsStore.addLog({
+      level: 'info',
+      category: 'system',
+      action: 'app_mount',
+      message: 'App initialization complete',
+      status: 'success'
+    });
+  } catch (error) {
+    await logsStore.addLog({
+      level: 'error',
+      category: 'system',
+      action: 'app_mount',
+      message: 'Failed to initialize app',
+      error: error instanceof Error ? error.message : String(error),
+      status: 'failure'
+    });
   }
 });
 
-function navigateTo(route: string) {
-  appStore.setCurrentView(route);
-  router.push(`/${route === 'home' ? '' : route}`);
+async function navigateTo(route: string) {
+  try {
+    await logsStore.addLog({
+      level: 'info',
+      category: 'user_action',
+      action: 'navigation_click',
+      message: `User clicked navigation item: ${route}`,
+      details: { route },
+      status: 'pending'
+    });
+
+    appStore.setCurrentView(route);
+    await router.push(`/${route === 'home' ? '' : route}`);
+
+    await logsStore.addLog({
+      level: 'info',
+      category: 'user_action',
+      action: 'navigation_click',
+      message: `Successfully navigated to: ${route}`,
+      details: { route },
+      status: 'success'
+    });
+  } catch (error) {
+    await logsStore.addLog({
+      level: 'error',
+      category: 'user_action',
+      action: 'navigation_click',
+      message: `Failed to navigate to: ${route}`,
+      error: error instanceof Error ? error.message : String(error),
+      details: { route },
+      status: 'failure'
+    });
+  }
 }
 </script>
 
@@ -107,7 +166,7 @@ function navigateTo(route: string) {
     </main>
 
     <ToastContainer />
-    <BaseLoadingOverlay />
+    <BaseLoadingOverlay v-if="appStore.isLoading" />
   </div>
 </template>
 

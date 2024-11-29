@@ -2,10 +2,307 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main", "splashscreen"],
+  "windows": [
+    "main",
+    "splashscreen"
+  ],
   "permissions": [
     "core:default",
     "shell:allow-open",
-    "process:allow-restart"
+    "process:allow-restart",
+    {
+      "identifier": "fs:allow-appdata-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appdata-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appdata-meta-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-meta-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-meta-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appcache-meta-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appcache-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appcache-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appconfig-meta-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appconfig-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-appconfig-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-meta",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-read",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applocaldata-write",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applog-meta-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applog-read-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-applog-write-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA/com.aizen.app/backups/*"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPLOCALDATA/*"
+        }
+      ]
+    }
   ]
 }

@@ -1,50 +1,56 @@
 import { defineStore } from 'pinia';
 
-export interface Toast {
-  id: string
-  message: string
-  duration?: number
-  showUndo?: boolean
-  undoAction?: () => void
+interface ToastState {
+  messages: ToastMessage[]
 }
 
-interface ToastState {
-  toasts: Toast[]
+interface ToastMessage {
+  id: string
+  text: string
+  type: 'success' | 'error' | 'info' | 'warning'
+  duration?: number
+  undoAction?: () => void
 }
 
 export const useToastStore = defineStore('toast', {
   state: (): ToastState => ({
-    toasts: []
+    messages: []
   }),
 
   actions: {
-    show(toast: Omit<Toast, 'id'>) {
-      const id = crypto.randomUUID();
-      this.toasts.push({ ...toast, id });
+    showToast(message: Omit<ToastMessage, 'id'>) {
+      const id = crypto.randomUUID()
+      const toast = { ...message, id }
+      
+      this.messages.push(toast)
 
-      if (toast.duration !== 0) {
+      if (message.duration !== 0) {
         setTimeout(() => {
-          this.remove(id);
-        }, toast.duration || 5000);
+          this.removeToast(id)
+        }, message.duration || 5000)
       }
 
-      return id;
+      return id
     },
 
-    remove(id: string) {
-      const index = this.toasts.findIndex(t => t.id === id);
+    showUndoToast(text: string, undoAction: () => void) {
+      return this.showToast({
+        text,
+        type: 'info',
+        duration: 5000,
+        undoAction
+      })
+    },
+
+    removeToast(id: string) {
+      const index = this.messages.findIndex(m => m.id === id)
       if (index !== -1) {
-        this.toasts.splice(index, 1);
+        this.messages.splice(index, 1)
       }
     },
 
-    showUndoToast(message: string, undoAction: () => void) {
-      return this.show({
-        message,
-        showUndo: true,
-        undoAction,
-        duration: 7000 // Give more time for undo
-      });
+    clearToasts() {
+      this.messages = []
     }
   }
-}); 
+}) 

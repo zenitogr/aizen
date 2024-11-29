@@ -14,13 +14,14 @@
       {
         "title": "aizen",
         "label": "main",
-        "width": 800,
-        "height": 600,
-        "visible": false
+        "width": 1280,
+        "height": 1024,
+        "visible": false,
+        "center": true
       },
       {
         "label": "splashscreen",
-        "url": "/splashscreen/splashscreen.html",
+        "url": "splashscreen/splashscreen.html",
         "decorations": false,
         "alwaysOnTop": true,
         "center": true,
@@ -31,7 +32,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": false,
+        "scope": []
+      }
     }
   },
   "bundle": {
@@ -43,9 +48,21 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/AiZEN-multi-size-icon.ico"
-    ]
+    ],
+    "resources": [],
+    "copyright": "",
+    "category": "DeveloperTool",
+    "shortDescription": "",
+    "longDescription": "",
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    }
   },
   "plugins": {
+    "shell": {
+      "open": true
+    },
     "process": {
       "relaunch": true
     }

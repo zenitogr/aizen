@@ -5,58 +5,130 @@ import BaseInput from '../base/BaseInput.vue';
 import BaseCard from '../base/BaseCard.vue';
 import { AIService } from '../../services/ai';
 import { useAppStore } from '../../stores/app';
+import { useLogsStore } from '../../stores/logs';
 
 const appStore = useAppStore();
+const logsStore = useLogsStore();
 
 interface Props {
   initialContent?: string;
   initialTitle?: string;
+  initialTags?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialContent: '',
-  initialTitle: ''
+  initialTitle: '',
+  initialTags: () => []
 });
 
 const emit = defineEmits<{
-  save: [{ title: string, content: string, aiAnalysis?: any }]
+  save: [{ title: string, content: string, tags: string[] }]
   cancel: []
 }>();
 
-const title = ref(props.initialTitle);
-const content = ref(props.initialContent);
+const title = ref(props.initialTitle || '');
+const content = ref(props.initialContent || '');
+const tags = ref(props.initialTags || []);
 const titleError = ref('');
 const contentError = ref('');
-const isAnalyzing = ref(false);
 const aiAnalysis = ref<any>(null);
-const writingPrompt = ref('');
+const isAnalyzing = ref(false);
+const writingPrompt = ref<string>('');
 
 const wordCount = computed(() => {
   return content.value.trim().split(/\s+/).filter(Boolean).length;
 });
 
 async function getWritingPrompt() {
+  await logsStore.addLog({
+    level: 'info',
+    category: 'ai',
+    action: 'request_prompt',
+    message: 'User requested writing prompt',
+    status: 'pending'
+  });
+
   try {
     appStore.setLoading(true);
     writingPrompt.value = await AIService.generateWritingPrompt();
+    
+    await logsStore.addLog({
+      level: 'info',
+      category: 'ai',
+      action: 'request_prompt',
+      message: 'Successfully generated writing prompt',
+      details: {
+        prompt_length: writingPrompt.value.length
+      },
+      status: 'success'
+    });
   } catch (error) {
     appStore.addError('Failed to generate writing prompt');
+    
+    await logsStore.addLog({
+      level: 'error',
+      category: 'ai',
+      action: 'request_prompt',
+      message: 'Failed to generate writing prompt',
+      error: error instanceof Error ? error.message : String(error),
+      status: 'failure'
+    });
   } finally {
     appStore.setLoading(false);
   }
 }
 
-async function analyzeContent() {
+async function analyzeCurrentContent() {
   if (!content.value.trim()) {
     contentError.value = 'Please write something first';
     return;
   }
 
+  await logsStore.addLog({
+    level: 'info',
+    category: 'ai',
+    action: 'analyze_content',
+    message: 'User requested content analysis',
+    details: {
+      content_length: content.value.length,
+      word_count: wordCount.value
+    },
+    status: 'pending'
+  });
+
   try {
     isAnalyzing.value = true;
     aiAnalysis.value = await AIService.analyzeJournalEntry(content.value);
+    
+    await logsStore.addLog({
+      level: 'info',
+      category: 'ai',
+      action: 'analyze_content',
+      message: 'Successfully analyzed content',
+      details: {
+        content_length: content.value.length,
+        word_count: wordCount.value,
+        topics: aiAnalysis.value.topics,
+        sentiment: aiAnalysis.value.sentiment
+      },
+      status: 'success'
+    });
   } catch (error) {
     appStore.addError('Failed to analyze content');
+    
+    await logsStore.addLog({
+      level: 'error',
+      category: 'ai',
+      action: 'analyze_content',
+      message: 'Failed to analyze content',
+      error: error instanceof Error ? error.message : String(error),
+      details: {
+        content_length: content.value.length,
+        word_count: wordCount.value
+      },
+      status: 'failure'
+    });
   } finally {
     isAnalyzing.value = false;
   }
@@ -83,17 +155,74 @@ function validate(): boolean {
 }
 
 async function handleSave() {
-  if (validate()) {
-    if (!aiAnalysis.value) {
-      await analyzeContent();
-    }
-    
-    emit('save', {
-      title: title.value.trim(),
-      content: content.value.trim(),
-      aiAnalysis: aiAnalysis.value
+  if (!validate()) {
+    await logsStore.addLog({
+      level: 'warning',
+      category: 'user_action',
+      action: 'save_entry',
+      message: 'Validation failed for entry save',
+      details: {
+        title_error: titleError.value,
+        content_error: contentError.value
+      },
+      status: 'failure'
     });
+    return;
   }
+
+  await logsStore.addLog({
+    level: 'info',
+    category: 'user_action',
+    action: 'save_entry',
+    message: 'Attempting to save entry',
+    details: {
+      title_length: title.value.length,
+      content_length: content.value.length,
+      word_count: wordCount.value,
+      tags_count: tags.value.length
+    },
+    status: 'pending'
+  });
+
+  // Try AI analysis but don't block save if it fails
+  try {
+    isAnalyzing.value = true;
+    aiAnalysis.value = await AIService.analyzeJournalEntry(content.value);
+  } catch (error) {
+    console.warn('AI analysis failed:', error);
+    await logsStore.addLog({
+      level: 'warning',
+      category: 'ai',
+      action: 'analyze_content',
+      message: 'AI analysis failed during save',
+      error: error instanceof Error ? error.message : String(error),
+      status: 'failure'
+    });
+  } finally {
+    isAnalyzing.value = false;
+  }
+
+  // Emit save event
+  emit('save', {
+    title: title.value.trim(),
+    content: content.value.trim(),
+    tags: tags.value
+  });
+
+  await logsStore.addLog({
+    level: 'info',
+    category: 'user_action',
+    action: 'save_entry',
+    message: 'Successfully saved entry',
+    details: {
+      title_length: title.value.length,
+      content_length: content.value.length,
+      word_count: wordCount.value,
+      tags_count: tags.value.length,
+      has_analysis: !!aiAnalysis.value
+    },
+    status: 'success'
+  });
 }
 </script>
 
@@ -120,7 +249,7 @@ async function handleSave() {
               variant="ghost"
               size="sm"
               :loading="isAnalyzing"
-              @click="analyzeContent"
+              @click="analyzeCurrentContent"
             >
               Analyze
             </BaseButton>
