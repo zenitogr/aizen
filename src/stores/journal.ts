@@ -75,6 +75,7 @@ export const useJournalStore = defineStore('journal', {
 
     async initialize() {
       if (this.initialized) {
+        console.log('Store already initialized, skipping')
         return // Skip if already initialized
       }
 
@@ -108,15 +109,23 @@ export const useJournalStore = defineStore('journal', {
             }
             return entry
           })
-          await this.saveState()
+          
+          // Set initialized before checking deleted entries
+          this.initialized = true
           
           // Only check deleted entries on first initialization
+          console.log('Checking for old deleted entries...')
           await this.checkDeletedEntries()
         } else {
           this.entries = []
+          this.initialized = true
         }
 
-        this.initialized = true
+        // Only save state if we need to migrate old entries
+        if (savedEntries?.some(entry => 'hidden' in entry)) {
+          await this.saveState()
+        }
+
       } catch (error) {
         await logsStore.addLog({
           level: 'error',
@@ -127,6 +136,7 @@ export const useJournalStore = defineStore('journal', {
           status: 'failure'
         })
         this.entries = []
+        this.initialized = true
       }
     },
 
@@ -349,18 +359,25 @@ export const useJournalStore = defineStore('journal', {
 
     async checkDeletedEntries() {
       const now = new Date().getTime()
-      const entriesToHide = this.entries.filter(entry => 
-        entry.state === 'recently_deleted' && 
-        entry.deletedAt && 
-        (now - new Date(entry.deletedAt).getTime()) > this.recentlyDeletedTimeout
-      )
+      const entriesToHide = this.entries.filter(entry => {
+        // Only check entries that are recently_deleted and have a deletedAt timestamp
+        if (entry.state === 'recently_deleted' && entry.deletedAt) {
+          const deletedAt = new Date(entry.deletedAt).getTime()
+          const daysSinceDeleted = (now - deletedAt) / (1000 * 60 * 60 * 24)
+          console.log(`Entry ${entry.id} was deleted ${daysSinceDeleted} days ago`)
+          return daysSinceDeleted > 30 // Only hide if more than 30 days old
+        }
+        return false
+      })
 
       console.log('Checking deleted entries:');
       console.log('Entries to auto-hide:', entriesToHide.map(e => ({
         id: e.id,
         title: e.title,
         deletedAt: e.deletedAt,
-        daysDeleted: Math.floor((now - new Date(e.deletedAt).getTime()) / (1000 * 60 * 60 * 24))
+        daysDeleted: e.deletedAt ? 
+          Math.floor((now - new Date(e.deletedAt).getTime()) / (1000 * 60 * 60 * 24)) 
+          : 'N/A'
       })));
 
       for (const entry of entriesToHide) {
