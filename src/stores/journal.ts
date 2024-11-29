@@ -78,24 +78,26 @@ export const useJournalStore = defineStore('journal', {
         const savedEntries = await Storage.load('journal-entries')
         
         if (savedEntries && Array.isArray(savedEntries)) {
-          this.entries = [...savedEntries]
-          await logsStore.addLog({
-            level: 'info',
-            category: 'journal',
-            action: 'initialize',
-            message: `Loaded ${savedEntries.length} entries`,
-            details: { entryCount: savedEntries.length },
-            status: 'success'
+          this.entries = savedEntries.map(entry => {
+            if ('hidden' in entry) {
+              const state = entry.hidden ? 'hidden' : (entry.state || 'active')
+              return {
+                ...entry,
+                state,
+                hidden: undefined
+              }
+            }
+            if (!entry.state || !['active', 'recently_deleted', 'hidden'].includes(entry.state)) {
+              return {
+                ...entry,
+                state: 'active'
+              }
+            }
+            return entry
           })
+          await this.saveState()
         } else {
           this.entries = []
-          await logsStore.addLog({
-            level: 'warning',
-            category: 'journal',
-            action: 'initialize',
-            message: 'No valid entries found, starting with empty array',
-            status: 'success'
-          })
         }
       } catch (error) {
         await logsStore.addLog({
