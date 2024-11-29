@@ -10,6 +10,7 @@
     "core:default",
     "shell:allow-open",
     "process:allow-restart",
+    "store:default",
     {
       "identifier": "fs:allow-appdata-read-recursive",
       "allow": [

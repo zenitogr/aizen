@@ -54,6 +54,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         // Add a command we can use to check
         .invoke_handler(tauri::generate_handler![greet, set_complete, kill_app])
         // Use the setup hook to execute setup related tasks

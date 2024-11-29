@@ -82,7 +82,7 @@ function debugEntries() {
           Debug Entries
         </BaseButton>
         <BaseButton 
-          variant="danger"
+          variant="secondary"
           @click="clearStorage"
         >
           Clear Storage
