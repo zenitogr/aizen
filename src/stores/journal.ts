@@ -29,6 +29,7 @@ interface JournalState {
   isEditing: boolean
   currentEntryId: string | null
   recentlyDeletedTimeout: number
+  initialized: boolean
 }
 
 export const useJournalStore = defineStore('journal', {
@@ -36,7 +37,8 @@ export const useJournalStore = defineStore('journal', {
     entries: [],
     isEditing: false,
     currentEntryId: null,
-    recentlyDeletedTimeout: 30 * 24 * 60 * 60 * 1000
+    recentlyDeletedTimeout: 30 * 24 * 60 * 60 * 1000,
+    initialized: false
   }),
 
   getters: {
@@ -45,7 +47,14 @@ export const useJournalStore = defineStore('journal', {
     },
 
     recentlyDeletedEntries(): JournalEntry[] {
-      return this.entries.filter(entry => entry.state === 'recently_deleted')
+      const entries = this.entries.filter(entry => entry.state === 'recently_deleted');
+      console.log('Recently deleted entries getter:', entries.map(e => ({
+        id: e.id,
+        title: e.title,
+        state: e.state,
+        deletedAt: e.deletedAt
+      })));
+      return entries;
     },
 
     hiddenEntries(): JournalEntry[] {
@@ -65,6 +74,10 @@ export const useJournalStore = defineStore('journal', {
     },
 
     async initialize() {
+      if (this.initialized) {
+        return // Skip if already initialized
+      }
+
       const logsStore = useLogsStore()
       try {
         await logsStore.addLog({
@@ -96,9 +109,14 @@ export const useJournalStore = defineStore('journal', {
             return entry
           })
           await this.saveState()
+          
+          // Only check deleted entries on first initialization
+          await this.checkDeletedEntries()
         } else {
           this.entries = []
         }
+
+        this.initialized = true
       } catch (error) {
         await logsStore.addLog({
           level: 'error',
@@ -110,9 +128,6 @@ export const useJournalStore = defineStore('journal', {
         })
         this.entries = []
       }
-
-      // Check for entries that should be moved to hidden state
-      await this.checkDeletedEntries()
     },
 
     async saveState() {
@@ -152,6 +167,9 @@ export const useJournalStore = defineStore('journal', {
 
     async softDeleteEntry(id: string) {
       const logsStore = useLogsStore()
+      console.log('Soft deleting entry:', id);
+      console.log('Entry state before deletion:', this.entries.find(e => e.id === id)?.state);
+      
       await logsStore.addLog({
         level: 'info',
         category: 'journal',
@@ -336,6 +354,14 @@ export const useJournalStore = defineStore('journal', {
         entry.deletedAt && 
         (now - new Date(entry.deletedAt).getTime()) > this.recentlyDeletedTimeout
       )
+
+      console.log('Checking deleted entries:');
+      console.log('Entries to auto-hide:', entriesToHide.map(e => ({
+        id: e.id,
+        title: e.title,
+        deletedAt: e.deletedAt,
+        daysDeleted: Math.floor((now - new Date(e.deletedAt).getTime()) / (1000 * 60 * 60 * 24))
+      })));
 
       for (const entry of entriesToHide) {
         await this.hideEntry(entry.id)

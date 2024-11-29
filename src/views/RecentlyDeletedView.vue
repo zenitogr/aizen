@@ -10,13 +10,16 @@ import { Storage } from '../utils/storage';
 const journalStore = useJournalStore();
 const searchQuery = ref('');
 
-// Add debug logging
+// Add more detailed debug logging
 onMounted(async () => {
   console.log('Recently Deleted View Mounted');
-  // Ensure store is initialized
   await journalStore.initialize();
-  console.log('All entries:', journalStore.entries);
-  console.log('Recently deleted entries:', journalStore.recentlyDeletedEntries);
+  console.log('Entry States:', journalStore.entries.map(e => ({
+    id: e.id,
+    title: e.title,
+    state: e.state,
+    deletedAt: e.deletedAt
+  })));
 });
 
 const recentlyDeleted = computed(() => {
@@ -43,10 +46,14 @@ function formatDate(dateString: string) {
 }
 
 function handleRestore(entryId: string) {
+  console.log('Restoring entry:', entryId);
+  console.log('Entry before restore:', journalStore.entries.find(e => e.id === entryId));
   journalStore.restoreEntry(entryId);
 }
 
 function handleHide(entryId: string) {
+  console.log('Hiding entry:', entryId);
+  console.log('Entry before hide:', journalStore.entries.find(e => e.id === entryId));
   journalStore.hideEntry(entryId);
 }
 
@@ -58,11 +65,18 @@ async function clearStorage() {
   }
 }
 
-// Add this to help debug the entries
+// Update debugEntries function with more detail
 function debugEntries() {
-  console.log('All entries:', journalStore.entries);
+  console.log('All entries:', journalStore.entries.map(e => ({
+    id: e.id,
+    title: e.title,
+    state: e.state,
+    deletedAt: e.deletedAt,
+    timeSinceDeleted: e.deletedAt ? 
+      Math.floor((Date.now() - new Date(e.deletedAt).getTime()) / (1000 * 60 * 60 * 24)) + ' days' 
+      : 'N/A'
+  })));
   console.log('Recently deleted entries:', journalStore.recentlyDeletedEntries);
-  console.log('Entry states:', journalStore.entries.map(e => ({ id: e.id, state: e.state })));
 }
 </script>
 
