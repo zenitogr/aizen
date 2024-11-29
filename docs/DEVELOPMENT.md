@@ -79,6 +79,13 @@
    - [ ] Content moderation
    - [ ] User management
 
+## Recently Deleted Entries Enhancement
+- [x] Add deletion timestamp tracking for entries
+- [x] Implement 1-month retention period for recently deleted entries
+- [x] Add manual hiding capability for recently deleted entries
+- [x] Add periodic check for expired deleted entries
+- [ ] Add UI controls for manually hiding entries from Recently Deleted view
+
 ## Current Sprint Progress
 ✅ Completed:
 - Toast notification system
@@ -144,3 +151,13 @@
 - Implemented error boundaries in Vue application
 - Added global error handling for Vue instance
 - Enhanced development tools accessibility
+
+## Toast System Updates
+- [x] Added entry lifecycle logging functionality
+  - Entry creation logs with titles
+  - Entry soft deletion logs with removal dates
+  - Entry hidden status logs with optional reasons
+  - Entry restoration logs
+  - Entry state transition logs
+  - Enhanced message formatting for better readability
+- [ ] Implement lifecycle log calls in relevant components

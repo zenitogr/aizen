@@ -159,94 +159,76 @@ export const useJournalStore = defineStore('journal', {
       }
     },
 
-    async softDeleteEntry(id: string) {
-      const logsStore = useLogsStore()
-      console.log('Soft deleting entry:', id);
-      console.log('Entry state before deletion:', this.entries.find(e => e.id === id)?.state);
-      
-      await logsStore.addLog({
-        level: 'info',
-        category: 'journal',
-        action: 'soft_delete',
-        message: `Attempting to soft delete entry: ${id}`,
-        status: 'pending'
-      })
+    async softDeleteEntry(entryId: string) {
+      const entry = this.entries.find(e => e.id === entryId);
+      if (!entry) return;
 
-      const index = this.entries.findIndex(e => e.id === id)
+      // Set the deletedAt timestamp
+      entry.deletedAt = new Date();
+      entry.state = 'recently_deleted';
+
+      // Save the entry with its new status BEFORE marking it hidden
+      await this.saveEntry(entry);
+
+      const toastStore = useToastStore();
+      toastStore.logEntryDeleted(entryId, entry.title || 'Untitled', entry.deletedAt);
+
+      // Don't automatically set to hidden - let the checkExpiredEntries handle that
+      // or wait for manual user action
+    },
+
+    async checkExpiredEntries() {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      for (const entry of this.entries) {
+        if (entry.state === 'recently_deleted' && entry.deletedAt) {
+          if (new Date(entry.deletedAt) < oneMonthAgo) {
+            entry.state = 'hidden';
+            await this.saveEntry(entry);
+
+            const toastStore = useToastStore();
+            toastStore.logEntryHidden(entry.id, entry.title || 'Untitled', 'Expired after 30 days');
+          }
+        }
+      }
+    },
+
+    async hideDeletedEntry(entryId: string) {
+      const entry = this.entries.find(e => e.id === entryId);
+      if (!entry) return;
+
+      entry.state = 'hidden';
+      await this.saveEntry(entry);
+
+      const toastStore = useToastStore();
+      toastStore.logEntryHidden(entryId, entry.title || 'Untitled', 'Manually hidden');
+    },
+
+    async saveEntry(entry: JournalEntry) {
+      // Ensure we're working with a copy to prevent state mutations during save
+      const entryToSave = { ...entry };
       
-      if (index !== -1) {
-        const entry = this.entries[index]
-        const toastStore = useToastStore()
-        const previousState = entry.state
+      // Log the state before save
+      console.log('Saving entry with status:', entryToSave.state);
+      
+      try {
+        // Perform the save operation
+        await Storage.save(`entry:${entry.id}`, entryToSave);
         
-        // Create a new array to ensure reactivity
-        this.entries = [
-          ...this.entries.slice(0, index),
-          {
-            ...entry,
-            state: 'recently_deleted',
-            deletedAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          },
-          ...this.entries.slice(index + 1)
-        ]
-
-        await this.saveState()
-        await logsStore.addLog({
-          level: 'info',
-          category: 'journal',
-          action: 'soft_delete',
-          message: `Successfully soft deleted entry: ${entry.title}`,
-          details: { entryId: id, title: entry.title },
-          status: 'success'
-        })
-
-        // Set up auto-hide after 30 days
-        const timeoutId = setTimeout(async () => {
-          const currentIndex = this.entries.findIndex(e => e.id === id)
-          if (currentIndex !== -1 && this.entries[currentIndex].state === 'recently_deleted') {
-            this.entries = [
-              ...this.entries.slice(0, currentIndex),
-              {
-                ...this.entries[currentIndex],
-                state: 'hidden',
-                updatedAt: new Date().toISOString()
-              },
-              ...this.entries.slice(currentIndex + 1)
-            ]
-            await this.saveState()
-          }
-        }, this.recentlyDeletedTimeout)
-
-        // Show undo toast
-        toastStore.showUndoToast(
-          `"${entry.title}" moved to Recently Deleted`,
-          async () => {
-            const currentIndex = this.entries.findIndex(e => e.id === id)
-            if (currentIndex !== -1) {
-              this.entries = [
-                ...this.entries.slice(0, currentIndex),
-                {
-                  ...this.entries[currentIndex],
-                  state: previousState,
-                  deletedAt: undefined,
-                  updatedAt: new Date().toISOString()
-                },
-                ...this.entries.slice(currentIndex + 1)
-              ]
-              clearTimeout(timeoutId)
-              await this.saveState()
-            }
-          }
-        )
-      } else {
-        await logsStore.addLog({
-          level: 'error',
-          category: 'journal',
-          action: 'soft_delete',
-          message: `Entry not found: ${id}`,
-          status: 'failure'
-        })
+        // Update the store state AFTER successful save
+        const index = this.entries.findIndex(e => e.id === entry.id);
+        if (index !== -1) {
+          this.entries[index] = entryToSave;
+        } else {
+          this.entries.push(entryToSave);
+        }
+        
+        // Log the state after save
+        console.log('Entry saved with status:', entryToSave.state);
+      } catch (error) {
+        console.error('Error saving entry:', error);
+        throw error;
       }
     },
 
