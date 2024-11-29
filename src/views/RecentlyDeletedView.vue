@@ -5,6 +5,7 @@ import BaseCard from '../components/base/BaseCard.vue';
 import BaseButton from '../components/base/BaseButton.vue';
 import BaseInput from '../components/base/BaseInput.vue';
 import HighlightedText from '../components/base/HighlightedText.vue';
+import { Storage } from '../utils/storage';
 
 const journalStore = useJournalStore();
 const searchQuery = ref('');
@@ -48,6 +49,21 @@ function handleRestore(entryId: string) {
 function handleHide(entryId: string) {
   journalStore.hideEntry(entryId);
 }
+
+async function clearStorage() {
+  if (confirm('Are you sure you want to clear all storage? This cannot be undone.')) {
+    console.log('Clearing storage...');
+    await Storage.clear(); // Clear Tauri storage
+    window.location.reload(); // Reload the page to reset Pinia stores
+  }
+}
+
+// Add this to help debug the entries
+function debugEntries() {
+  console.log('All entries:', journalStore.entries);
+  console.log('Recently deleted entries:', journalStore.recentlyDeletedEntries);
+  console.log('Entry states:', journalStore.entries.map(e => ({ id: e.id, state: e.state })));
+}
 </script>
 
 <template>
@@ -56,6 +72,21 @@ function handleHide(entryId: string) {
       <div class="header-content">
         <h1>Recently Deleted</h1>
         <p class="subtitle">Items here will be automatically hidden after 30 days</p>
+      </div>
+      
+      <div class="header-actions">
+        <BaseButton 
+          variant="ghost"
+          @click="debugEntries"
+        >
+          Debug Entries
+        </BaseButton>
+        <BaseButton 
+          variant="danger"
+          @click="clearStorage"
+        >
+          Clear Storage
+        </BaseButton>
       </div>
       
       <div class="search-bar">
@@ -235,5 +266,11 @@ time {
   .entry-actions {
     flex-direction: column;
   }
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
 }
 </style> 
