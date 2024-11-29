@@ -110,6 +110,9 @@ export const useJournalStore = defineStore('journal', {
         })
         this.entries = []
       }
+
+      // Check for entries that should be moved to hidden state
+      await this.checkDeletedEntries()
     },
 
     async saveState() {
@@ -236,21 +239,106 @@ export const useJournalStore = defineStore('journal', {
     },
 
     async restoreEntry(id: string) {
-      const entry = this.entries.find(e => e.id === id);
+      const logsStore = useLogsStore()
+      const entry = this.entries.find(e => e.id === id)
+      
       if (entry) {
-        entry.state = 'active';
-        entry.deletedAt = undefined;
-        entry.updatedAt = new Date().toISOString();
-        await this.saveState();
+        await logsStore.addLog({
+          level: 'info',
+          category: 'journal',
+          action: 'restore_entry',
+          message: `Restoring entry: ${entry.title}`,
+          status: 'pending'
+        })
+
+        const index = this.entries.findIndex(e => e.id === id)
+        
+        // Create a new array to ensure reactivity
+        this.entries = [
+          ...this.entries.slice(0, index),
+          {
+            ...entry,
+            state: 'active',
+            deletedAt: undefined,
+            updatedAt: new Date().toISOString()
+          },
+          ...this.entries.slice(index + 1)
+        ]
+
+        await this.saveState()
+        
+        await logsStore.addLog({
+          level: 'info',
+          category: 'journal',
+          action: 'restore_entry',
+          message: `Successfully restored entry: ${entry.title}`,
+          details: { entryId: id, title: entry.title },
+          status: 'success'
+        })
+
+        const toastStore = useToastStore()
+        toastStore.showToast({
+          text: `"${entry.title}" restored`,
+          type: 'success'
+        })
       }
     },
 
     async hideEntry(id: string) {
-      const entry = this.entries.find(e => e.id === id);
+      const logsStore = useLogsStore()
+      const entry = this.entries.find(e => e.id === id)
+      
       if (entry) {
-        entry.state = 'hidden';
-        entry.updatedAt = new Date().toISOString();
-        await this.saveState();
+        await logsStore.addLog({
+          level: 'info',
+          category: 'journal',
+          action: 'hide_entry',
+          message: `Hiding entry: ${entry.title}`,
+          status: 'pending'
+        })
+
+        const index = this.entries.findIndex(e => e.id === id)
+        
+        // Create a new array to ensure reactivity
+        this.entries = [
+          ...this.entries.slice(0, index),
+          {
+            ...entry,
+            state: 'hidden',
+            updatedAt: new Date().toISOString()
+          },
+          ...this.entries.slice(index + 1)
+        ]
+
+        await this.saveState()
+        
+        await logsStore.addLog({
+          level: 'info',
+          category: 'journal',
+          action: 'hide_entry',
+          message: `Successfully hid entry: ${entry.title}`,
+          details: { entryId: id, title: entry.title },
+          status: 'success'
+        })
+
+        const toastStore = useToastStore()
+        toastStore.showToast({
+          text: `"${entry.title}" moved to Hidden`,
+          type: 'info'
+        })
+      }
+    },
+
+    async checkDeletedEntries() {
+      const now = new Date().getTime()
+      const entriesToHide = this.entries.filter(entry => 
+        entry.state === 'recently_deleted' && 
+        entry.deletedAt && 
+        (now - new Date(entry.deletedAt).getTime()) > this.recentlyDeletedTimeout
+      )
+
+      for (const entry of entriesToHide) {
+        await this.hideEntry(entry.id)
       }
     }
   }
