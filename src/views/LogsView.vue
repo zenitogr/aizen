@@ -76,7 +76,7 @@ function formatDate(dateString: string) {
         <h1>System Logs</h1>
         <div class="header-actions">
           <BaseButton 
-            variant="secondary"
+            variant="primary"
             @click="handleExport"
           >
             Export Logs
@@ -107,6 +107,10 @@ function formatDate(dateString: string) {
                   v-model="selectedLevels"
                   :value="level"
                 />
+                <span 
+                  class="level-indicator"
+                  :style="{ backgroundColor: getLogColor(level) }"
+                ></span>
                 {{ level }}
               </label>
             </div>
@@ -143,6 +147,10 @@ function formatDate(dateString: string) {
                   v-model="selectedStatuses"
                   :value="status"
                 />
+                <span 
+                  class="status-indicator"
+                  :class="status"
+                ></span>
                 {{ status }}
               </label>
             </div>
@@ -153,6 +161,7 @@ function formatDate(dateString: string) {
           <BaseInput
             v-model="searchQuery"
             placeholder="Search logs..."
+            icon="search"
           />
           <DateRangePicker
             v-model="dateRange"
@@ -170,14 +179,22 @@ function formatDate(dateString: string) {
         :class="log.level"
       >
         <div class="log-header">
-          <span 
-            class="log-level"
-            :style="{ color: getLogColor(log.level) }"
+          <div class="log-meta">
+            <span 
+              class="log-level"
+              :style="{ color: getLogColor(log.level) }"
+            >
+              {{ log.level.toUpperCase() }}
+            </span>
+            <span class="log-category">{{ log.category }}</span>
+            <span class="log-timestamp">{{ formatDate(log.timestamp) }}</span>
+          </div>
+          <div 
+            class="log-status"
+            :class="log.status"
           >
-            {{ log.level.toUpperCase() }}
-          </span>
-          <span class="log-category">{{ log.category }}</span>
-          <span class="log-timestamp">{{ formatDate(log.timestamp) }}</span>
+            {{ log.status }}
+          </div>
         </div>
 
         <div class="log-content">
@@ -185,10 +202,6 @@ function formatDate(dateString: string) {
           <div class="log-message">{{ log.message }}</div>
           <pre v-if="log.details" class="log-details">{{ JSON.stringify(log.details, null, 2) }}</pre>
           <div v-if="log.error" class="log-error">{{ log.error }}</div>
-        </div>
-
-        <div class="log-status" :class="log.status">
-          {{ log.status }}
         </div>
       </BaseCard>
 
@@ -207,5 +220,136 @@ function formatDate(dateString: string) {
   width: 100%;
 }
 
-/* Add the rest of the styles... */
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.filter-card {
+  margin-bottom: var(--spacing-lg);
+}
+
+.filter-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.filter-group h3 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.level-indicator,
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.search-filters {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--spacing-md);
+}
+
+.log-entry {
+  padding: var(--spacing-md);
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.log-level {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.log-category {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.log-timestamp {
+  color: var(--text-disabled);
+  font-size: 0.75rem;
+}
+
+.log-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.log-action {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.log-message {
+  color: var(--text-primary);
+}
+
+.log-details {
+  font-family: var(--font-family-mono);
+  font-size: 0.875rem;
+  padding: var(--spacing-sm);
+  background: var(--surface-dark);
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.log-error {
+  color: var(--status-error);
+  font-size: 0.875rem;
+  padding: var(--spacing-sm);
+  background: color-mix(in srgb, var(--status-error) 10%, transparent);
+  border-radius: 4px;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-xl);
+}
+
+@media (max-width: 768px) {
+  .logs-view {
+    padding: var(--spacing-md);
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .search-filters {
+    grid-template-columns: 1fr;
+  }
+}
 </style> 

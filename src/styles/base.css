@@ -184,4 +184,62 @@ input:focus, textarea:focus {
   border-radius: 12px;
   background: var(--surface-dark);
   border: 1px solid var(--border-color);
+}
+
+/* Log Entry Styles */
+.log-entry {
+  border-left: 4px solid transparent;
+  transition: var(--transition-fast);
+  margin-bottom: var(--spacing-sm);
+}
+
+.log-entry.info { border-left-color: var(--status-info); }
+.log-entry.warning { border-left-color: var(--status-warning); }
+.log-entry.error { border-left-color: var(--status-error); }
+.log-entry.debug { border-left-color: var(--text-secondary); }
+
+/* Log Status Styles */
+.log-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.log-status.success { 
+  background: color-mix(in srgb, var(--status-success) 15%, transparent);
+  color: var(--status-success);
+}
+
+.log-status.failure {
+  background: color-mix(in srgb, var(--status-error) 15%, transparent);
+  color: var(--status-error);
+}
+
+.log-status.pending {
+  background: color-mix(in srgb, var(--status-warning) 15%, transparent);
+  color: var(--status-warning);
+}
+
+/* Filter Styles */
+.filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+  background: var(--surface-dark);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.filter-option:hover {
+  background: var(--surface-light);
+}
+
+.filter-option input[type="checkbox"] {
+  accent-color: var(--primary-color);
 } 
