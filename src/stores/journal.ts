@@ -41,31 +41,15 @@ export const useJournalStore = defineStore('journal', {
 
   getters: {
     activeEntries(): JournalEntry[] {
-      if (!Array.isArray(this.entries)) {
-        console.warn('Entries is not an array:', this.entries)
-        return []
-      }
-      return this.entries
-        .filter(entry => entry?.state === 'active')
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      return this.entries.filter(entry => !entry.state || entry.state === 'active')
     },
 
     recentlyDeletedEntries(): JournalEntry[] {
-      if (!Array.isArray(this.entries)) {
-        console.warn('Entries is not an array:', this.entries)
-        return []
-      }
-      return this.entries
-        .filter(entry => entry?.state === 'recently_deleted')
-        .sort((a, b) => 
-          new Date(b.deletedAt || 0).getTime() - new Date(a.deletedAt || 0).getTime()
-        )
+      return this.entries.filter(entry => entry.state === 'recently_deleted')
     },
 
     hiddenEntries(): JournalEntry[] {
-      return this.entries
-        .filter(entry => entry?.state === 'hidden')
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      return this.entries.filter(entry => entry.state === 'hidden')
     },
 
     currentEntry(): JournalEntry | null {

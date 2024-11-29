@@ -26,14 +26,11 @@ const recentlyDeleted = computed(() => {
   if (!searchQuery.value) return entries;
   
   const query = searchQuery.value.toLowerCase();
-  const filtered = entries.filter(entry => 
+  return entries.filter(entry => 
     entry?.title?.toLowerCase().includes(query) ||
     entry?.content?.toLowerCase().includes(query) ||
     entry?.tags?.some(tag => tag.toLowerCase().includes(query))
   );
-  
-  console.log('Filtered entries:', filtered);
-  return filtered;
 });
 
 function formatDate(dateString: string) {
