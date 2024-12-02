@@ -79,15 +79,17 @@ export const useJournalStore = defineStore('journal', {
         return
       }
 
-      const logsStore = useLogsStore()
+      console.log('Initializing journal store...')
+      
       try {
         const savedEntries = await Storage.load('journal-entries')
-        console.log('Loaded entries from storage:', savedEntries?.map(e => ({
-          id: e.id,
-          title: e.title,
-          state: e.state,
-          deletedAt: e.deletedAt
-        })));
+        console.log('Loaded entries from storage:', 
+          Array.isArray(savedEntries) ? savedEntries.map((e: JournalEntry) => ({
+            id: e.id,
+            title: e.title,
+            state: e.state,
+          })) : []
+        );
         
         if (savedEntries && Array.isArray(savedEntries)) {
           this.entries = savedEntries.map(entry => {
@@ -101,16 +103,13 @@ export const useJournalStore = defineStore('journal', {
             });
             return mappedEntry;
           })
-          
-          this.initialized = true
-          
-          // Remove checkDeletedEntries call from here since it might be causing issues
-          // await this.checkDeletedEntries()
         } else {
           this.entries = []
-          this.initialized = true
         }
-
+        
+        this.initialized = true
+        console.log('Journal store initialized with entries:', this.entries.length)
+        
       } catch (error) {
         console.error('Failed to initialize:', error)
         this.entries = []
@@ -156,6 +155,7 @@ export const useJournalStore = defineStore('journal', {
           ...updates,
           updatedAt: new Date().toISOString()
         })
+        await this.saveState()
       }
     },
 
@@ -164,14 +164,14 @@ export const useJournalStore = defineStore('journal', {
       if (!entry) return;
 
       // Set the deletedAt timestamp
-      entry.deletedAt = new Date();
+      entry.deletedAt = new Date().toISOString();
       entry.state = 'recently_deleted';
 
       // Save the entry with its new status BEFORE marking it hidden
       await this.saveEntry(entry);
 
       const toastStore = useToastStore();
-      toastStore.logEntryDeleted(entryId, entry.title || 'Untitled', entry.deletedAt);
+      toastStore.logEntryDeleted(entryId, entry.title || 'Untitled', new Date(entry.deletedAt || ''));
 
       // Don't automatically set to hidden - let the checkExpiredEntries handle that
       // or wait for manual user action
@@ -213,16 +213,19 @@ export const useJournalStore = defineStore('journal', {
       console.log('Saving entry with status:', entryToSave.state);
       
       try {
-        // Perform the save operation
-        await Storage.save(`entry:${entry.id}`, entryToSave);
-        
-        // Update the store state AFTER successful save
+        // Update the store state FIRST
         const index = this.entries.findIndex(e => e.id === entry.id);
         if (index !== -1) {
           this.entries[index] = entryToSave;
         } else {
           this.entries.push(entryToSave);
         }
+
+        // Save both the individual entry and the full state
+        await Promise.all([
+          Storage.save(`entry:${entry.id}`, entryToSave),
+          this.saveState()  // Add this to ensure the main journal-entries storage is updated
+        ]);
         
         // Log the state after save
         console.log('Entry saved with status:', entryToSave.state);
@@ -272,8 +275,9 @@ export const useJournalStore = defineStore('journal', {
 
         const toastStore = useToastStore()
         toastStore.showToast({
-          text: `"${entry.title}" restored`,
-          type: 'success'
+          message: `"${entry.title}" restored`,
+          type: 'success',
+          timestamp: Date.now()
         })
       }
     },
@@ -317,8 +321,9 @@ export const useJournalStore = defineStore('journal', {
 
         const toastStore = useToastStore()
         toastStore.showToast({
-          text: `"${entry.title}" moved to Hidden`,
-          type: 'info'
+          message: `"${entry.title}" moved to Hidden`,
+          type: 'info',
+          timestamp: Date.now()
         })
       }
     },
@@ -350,4 +355,22 @@ export const useJournalStore = defineStore('journal', {
       }
     }
   }
-}) 
+})
+
+// Modified initialization approach
+export const initJournalStore = async () => {
+  const store = useJournalStore()
+  if (!store.initialized) {
+    await store.initialize()
+  }
+  return store
+}
+
+// Add a composable to ensure store is initialized
+export const useInitializedJournalStore = async () => {
+  const store = useJournalStore()
+  if (!store.initialized) {
+    await store.initialize()
+  }
+  return store
+} 
