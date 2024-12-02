@@ -96,7 +96,7 @@ async function navigateTo(route: string) {
 </script>
 
 <template>
-  <div class="app-container" :data-theme="userStore.currentTheme">
+  <div class="app-container dark" :data-theme="userStore.currentTheme">
     <header class="app-header">
       <div class="logo" @click="navigateTo('home')" role="button" tabindex="0">
         <span class="ai">Ai</span><span class="zen">ZEN</span>

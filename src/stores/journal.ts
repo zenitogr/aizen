@@ -30,6 +30,11 @@ interface JournalState {
   currentEntryId: string | null
   recentlyDeletedTimeout: number
   initialized: boolean
+  dataAccessLog: {
+    timestamp: string,
+    action: 'read' | 'write' | 'analyze' | 'export',
+    details: string
+  }[]
 }
 
 export const useJournalStore = defineStore('journal', {
@@ -38,7 +43,12 @@ export const useJournalStore = defineStore('journal', {
     isEditing: false,
     currentEntryId: null,
     recentlyDeletedTimeout: 30 * 24 * 60 * 60 * 1000,
-    initialized: false
+    initialized: false,
+    dataAccessLog: [] as {
+      timestamp: string,
+      action: 'read' | 'write' | 'analyze' | 'export',
+      details: string
+    }[]
   }),
 
   getters: {
@@ -352,6 +362,39 @@ export const useJournalStore = defineStore('journal', {
 
       for (const entry of entriesToHide) {
         await this.hideEntry(entry.id)
+      }
+    },
+
+    logDataAccess(action: 'read' | 'write' | 'analyze' | 'export', details: string) {
+      this.dataAccessLog.push({
+        timestamp: new Date().toISOString(),
+        action,
+        details
+      })
+    },
+
+    getDataInsights() {
+      return {
+        totalEntries: this.entries.length,
+        activeEntries: this.entries.filter(e => e.state === 'active').length,
+        recentlyDeletedEntries: this.entries.filter(e => e.state === 'recently_deleted').length,
+        hiddenEntries: this.entries.filter(e => e.state === 'hidden').length,
+        oldestEntry: this.entries.length ? new Date(Math.min(...this.entries.map(e => new Date(e.createdAt).getTime()))) : null,
+        newestEntry: this.entries.length ? new Date(Math.max(...this.entries.map(e => new Date(e.createdAt).getTime()))) : null,
+        totalTags: [...new Set(this.entries.flatMap(e => e.tags))].length,
+        aiAnalyzedEntries: this.entries.filter(e => e.aiAnalysis).length
+      }
+    },
+
+    async exportUserData() {
+      this.logDataAccess('export', 'User requested full data export')
+      return {
+        entries: this.entries,
+        dataAccessLog: this.dataAccessLog,
+        insights: this.getDataInsights(),
+        exportDate: new Date().toISOString(),
+        appVersion: '1.0.0', // Replace with actual version
+        dataFormat: 'AiZEN-export-v1'
       }
     }
   }

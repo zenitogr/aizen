@@ -1,0 +1,9 @@
+/* Option 1: Increase specificity of base styles */
+:root .your-selector {
+  /* styles */
+}
+
+/* Option 2: Use !important sparingly for truly global styles */
+.must-be-global {
+  color: blue !important;
+} 

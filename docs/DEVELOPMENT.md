@@ -161,3 +161,32 @@
   - Entry state transition logs
   - Enhanced message formatting for better readability
 - [ ] Implement lifecycle log calls in relevant components
+
+## Data Transparency Features
+- [ ] Add data access logging
+- [ ] Implement data insights dashboard
+- [ ] Create user data export functionality
+- [ ] Add AI usage transparency controls
+- [ ] Implement data storage location indicators
+- [ ] Add privacy policy integration
+- [ ] Create user data management guide
+
+## Privacy Features
+- [ ] Implement Privacy Status Bar
+  - [x] Basic offline/online status indicator
+  - [x] Feature-specific status indicators
+  - [ ] Feature details dialog
+  - [ ] Privacy status persistence
+- [ ] GROQ AI Integration
+  - [ ] User opt-in flow
+  - [ ] Clear privacy implications
+  - [ ] Usage tracking
+- [ ] Data Storage
+  - [ ] Local storage encryption
+  - [ ] Storage location transparency
+  - [ ] Data size monitoring
+- [ ] Privacy Policy
+  - [ ] Offline-first commitment
+  - [ ] Data handling documentation
+  - [ ] Third-party services documentation
+  - [ ] User rights and controls
